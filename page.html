@@ -2,245 +2,237 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;900&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&family=Gothic+A1:wght@400;500;700&display=swap">
 <style>
-/* Layout: 사진이 이끄는 매거진형. 히어로(제목+사진 모자이크) → 제철 특집 → 고정 검색바 → 사진 카드 그리드 → 어두운 비율 띠 → 책 목차 → 출처·사진 크레딧 */
+/* 방향: 첫 화면이 곧 검색 — "오늘 냉장고에 [ ] 있어요" 문장 속 입력칸.
+   색은 부엌 재료에서: 쌀밥 흰색, 김의 초록빛 먹색, 고춧가루 빨강, 배추 연두, 참기름 호박색.
+   카드는 테두리·그림자 없이 사진과 활자로만 구분한다. */
 :root{
-  --bg:#FFFFFF; --surface:#F6F5F2; --ink:#151515; --muted:#6F6B66; --line:#E6E3DE;
-  --red:#B3261A; --red-soft:#F6E6E2; --green:#2F6B42; --amber:#A8740F; --band:#151515; --band-ink:#F3F1EC;
-  --shadow:0 1px 2px rgba(20,20,20,.06),0 8px 24px rgba(20,20,20,.06);
-  --f-display:"Noto Serif KR","AppleMyungjo","Batang",serif;
-  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
-  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --rice:#F6F7F3; --paper:#FFFFFF; --laver:#1F2A24; --muted:#5E6A62; --line:#DCE2D8;
+  --chili:#B8321F; --chili-soft:#F4E2DC; --napa:#E3EBC4; --napa-ink:#38461F; --oil:#A8701A;
+  --f-display:"Hahmlet","AppleMyungjo","Batang",serif;
+  --f-body:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --gut-l:max(20px,env(safe-area-inset-left,0px)); --gut-r:max(20px,env(safe-area-inset-right,0px));
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#111110; --surface:#1C1B19; --ink:#EEECE7; --muted:#A39E96; --line:#2D2B28;
-  --red:#E8705E; --red-soft:#3A221E; --green:#7CC492; --amber:#E0B04F; --band:#000000; --band-ink:#EEECE7;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3); color-scheme:dark}}
+  --rice:#121613; --paper:#1A1F1B; --laver:#E7ECE4; --muted:#9AA69D; --line:#2C342E;
+  --chili:#EE7A62; --chili-soft:#3A2420; --napa:#262E1C; --napa-ink:#D3E0A6; --oil:#E2AE52; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#111110; --surface:#1C1B19; --ink:#EEECE7; --muted:#A39E96; --line:#2D2B28;
-  --red:#E8705E; --red-soft:#3A221E; --green:#7CC492; --amber:#E0B04F; --band:#000000; --band-ink:#EEECE7;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3); color-scheme:dark}
+  --rice:#121613; --paper:#1A1F1B; --laver:#E7ECE4; --muted:#9AA69D; --line:#2C342E;
+  --chili:#EE7A62; --chili-soft:#3A2420; --napa:#262E1C; --napa-ink:#D3E0A6; --oil:#E2AE52; color-scheme:dark}
 
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0}
-.wrap{max-width:1180px;margin:0 auto;padding-left:var(--gut-l);padding-right:var(--gut-r)}
-h1,h2,h3{text-wrap:balance;margin:0}
+body{background:var(--rice);color:var(--laver);font-family:var(--f-body);font-size:15px;line-height:1.65;margin:0;font-variant-numeric:tabular-nums}
+.wrap{max-width:1200px;margin:0 auto;padding-left:var(--gut-l);padding-right:var(--gut-r)}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
 a{color:inherit}
 button{font:inherit;color:inherit}
 img{display:block;max-width:100%}
-:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+:focus-visible{outline:2px solid var(--chili);outline-offset:3px;border-radius:2px}
 
-/* 상단 바 */
-.topbar{border-bottom:1px solid var(--line)}
-.topbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px;font-size:13px}
-.brand{font-family:var(--f-display);font-weight:900;font-size:17px;letter-spacing:-.01em}
-.brand i{font-style:normal;color:var(--red)}
-.topbar nav{display:flex;gap:16px;color:var(--muted)}
-.topbar nav a{text-decoration:none}
-.topbar nav a:hover{color:var(--ink)}
+/* 상단 */
+.top .wrap{display:flex;justify-content:space-between;align-items:baseline;padding-block:22px 0}
+.brand{font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:-.02em}
+.top nav{display:flex;gap:20px;font-size:14px;color:var(--muted)}
+.top nav a{text-decoration:none}
+.top nav a:hover{color:var(--laver)}
 
-/* 히어로 */
-.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:48px;align-items:center;padding-block:56px 48px}
-.kicker{font-size:12px;letter-spacing:.16em;color:var(--red);font-weight:700}
-.hero h1{font-family:var(--f-display);font-weight:900;font-size:clamp(38px,5.6vw,68px);line-height:1.12;letter-spacing:-.02em;margin-top:14px}
-.hero p{color:var(--muted);max-width:44ch;margin:18px 0 0;font-size:16px}
-.stats{display:flex;flex-wrap:wrap;gap:28px;margin-top:28px}
-.stats div{display:grid}
-.stats b{font-family:var(--f-display);font-size:30px;font-weight:900;line-height:1}
-.stats span{font-size:12px;color:var(--muted);margin-top:6px}
-.mosaic{display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr;gap:10px;aspect-ratio:5/4;max-width:100%}
-.mosaic .ph{border-radius:14px}
-.mosaic .ph:first-child{grid-row:1/3}
+/* 첫 화면: 문장 속 검색 */
+.ask .wrap{padding-block:clamp(48px,9vw,112px) 36px}
+.ask h1{font-family:var(--f-display);font-weight:800;font-size:clamp(36px,7.2vw,92px);line-height:1.08;letter-spacing:-.035em}
+.ask h1 .slot{display:inline-block;vertical-align:baseline;position:relative}
+.ask h1 input{font:inherit;letter-spacing:inherit;color:var(--chili);background:transparent;border:0;border-bottom:.07em solid var(--laver);padding:0 .05em;width:3em;min-width:1.6em;max-width:72vw;outline:none;border-radius:0;field-sizing:content}
+.ask h1 input::placeholder{color:color-mix(in srgb,var(--chili) 35%,transparent)}
+.ask h1 input:focus{border-bottom-color:var(--chili)}
+.ask h1 input::-webkit-search-cancel-button{display:none}
+.ask .sub{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:28px;font-size:15px;color:var(--muted)}
+.ask .sub p{margin:0;max-width:46ch}
+.picks{display:flex;flex-wrap:wrap;gap:6px}
+.picks button{border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:4px 11px;font-size:14px;cursor:pointer}
+.picks button:hover,.picks button[aria-pressed="true"]{border-color:var(--laver);background:var(--laver);color:var(--rice)}
 
-/* 사진 프레임 + 대체 이미지 */
-.ph{position:relative;overflow:hidden;background:var(--surface);border-radius:12px}
-.ph img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
-.ph.noimg{display:grid;place-items:center;background:linear-gradient(135deg,var(--red-soft),var(--surface))}
-.ph.noimg::after{content:attr(data-initial);font-family:var(--f-display);font-weight:900;font-size:56px;color:var(--red);opacity:.55}
+/* 상차림 사진 줄 */
+.spread{display:grid;grid-template-columns:1.6fr 1fr 1.2fr .9fr 1.3fr 1fr;gap:6px;height:clamp(150px,22vw,260px);padding-inline:6px}
+.spread button{border:0;padding:0;cursor:pointer;background:none;position:relative}
+.spread .ph{height:100%;border-radius:3px}
+.spread span{position:absolute;left:10px;bottom:8px;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+@media (max-width:820px){.spread{grid-template-columns:1.4fr 1fr 1fr}.spread button:nth-child(n+4){display:none}}
 
-/* 제철 특집 */
-.feature .wrap{padding-block:8px 40px}
-.feat{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--surface)}
-.feat .ph{border-radius:0;min-height:300px}
-.feat .body{padding:32px;display:grid;gap:14px;align-content:center}
-.feat h2{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,3vw,36px);line-height:1.2}
-.feat p{margin:0;color:var(--muted)}
-.feat .row{display:flex;flex-wrap:wrap;gap:8px}
-.pill{font-size:12px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 12px}
-.btn{justify-self:start;border:0;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 20px;font-weight:700;font-size:14px;cursor:pointer}
-.btn:hover{opacity:.88}
-.mini{display:flex;gap:8px;flex-wrap:wrap}
-.mini button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
-.mini button:hover{border-color:var(--ink)}
+/* 사진 프레임 */
+.ph{position:relative;overflow:hidden;background:var(--napa);border-radius:4px}
+.ph img{width:100%;height:100%;object-fit:cover}
+.ph.noimg{display:grid;place-items:center}
+.ph.noimg::after{content:attr(data-initial);font-family:var(--f-display);font-weight:800;font-size:64px;color:var(--napa-ink);opacity:.5}
 
-/* 고정 검색바 */
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.toolbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-block:1px solid var(--line)}
-.toolbar .wrap{display:grid;gap:10px;padding-block:12px}
-.trow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.search{flex:1 1 280px;display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 16px;min-width:0}
-.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink);padding:10px 0;outline:none}
-.search svg{flex:none;color:var(--muted)}
-.trow select{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 14px}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer;white-space:nowrap}
-.chip:hover{border-color:var(--ink)}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.chip .n{font-family:var(--f-num);font-size:11px;opacity:.6;margin-left:5px}
+/* 고정 탭 바 */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--rice);z-index:30}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--rice);border-bottom:1px solid var(--line);margin-top:56px}
+.bar .wrap{display:flex;align-items:center;gap:20px}
+.tabs{display:flex;gap:22px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:0;background:none;padding:16px 0 14px;font-size:15px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--laver)}
+.tab[aria-pressed="true"]{color:var(--laver);font-weight:700;border-bottom-color:var(--chili)}
+.tab sup{font-size:11px;margin-left:3px;color:var(--muted);font-weight:400}
+.bar select{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:6px 10px;font-size:14px}
 
-/* 카드 그리드 */
-.list .wrap{padding-block:24px 56px}
-.result-line{font-size:13px;color:var(--muted);margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:28px 22px}
-.card{all:unset;cursor:pointer;display:grid;gap:12px;align-content:start;min-width:0}
-.card:focus-visible{outline:2px solid var(--red);outline-offset:4px;border-radius:12px}
+/* 레시피 목록 */
+.list .wrap{padding-block:24px 72px}
+.status{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--muted);margin-bottom:22px}
+.status button{border:0;background:none;padding:0;color:var(--chili);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:40px 24px}
+.card{all:unset;cursor:pointer;display:grid;grid-template-rows:auto 1fr;gap:14px}
 .card .ph{aspect-ratio:4/3}
-.card:hover .ph img{transform:scale(1.04)}
-.badge{position:absolute;left:10px;top:10px;font-size:11px;font-weight:700;background:var(--bg);color:var(--ink);border-radius:999px;padding:3px 10px;box-shadow:var(--shadow)}
-.card .t{display:grid;gap:4px}
-.card .chef{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
-.card h3{font-family:var(--f-display);font-weight:900;font-size:20px;line-height:1.3;letter-spacing:-.01em}
-.card .hook{margin:0;font-size:13.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--muted)}
-.meta span+span::before{content:"·";margin-right:6px}
-.trust{font-size:11px;display:inline-flex;align-items:center;gap:5px}
-.trust::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
-.trust.hi{color:var(--green)} .trust.mid{color:var(--amber)} .trust.lo{color:var(--red)}
-.empty{grid-column:1/-1;padding:56px 0;color:var(--muted);text-align:center}
+.card .t{display:grid;gap:4px;align-content:start}
+.card .cat{font-size:13px;color:var(--chili);font-weight:700}
+.card h3{font-family:var(--f-display);font-weight:600;font-size:21px;line-height:1.3;letter-spacing:-.02em}
+.card:hover h3{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px}
+.card:focus-visible{outline:2px solid var(--chili);outline-offset:6px;border-radius:4px}
+.card .hook{margin:0;font-size:14px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .meta{font-size:13px;color:var(--muted);margin-top:4px}
+.card .meta b{color:var(--laver);font-weight:500}
+.empty{grid-column:1/-1;padding:48px 0;font-size:16px}
+.empty button{border:0;background:none;padding:0;color:var(--chili);cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-size:16px}
 
-/* 비율 띠 */
-.band{background:var(--band);color:var(--band-ink)}
-.band .wrap{padding-block:56px}
-.band .sec-h small{color:color-mix(in srgb,var(--band-ink) 60%,transparent)}
-.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:24px}
-.sec-h h2{font-family:var(--f-display);font-weight:900;font-size:clamp(24px,3vw,32px);letter-spacing:-.01em}
-.sec-h small{color:var(--muted);font-size:13px}
-.ratio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:color-mix(in srgb,var(--band-ink) 18%,transparent);border-radius:14px;overflow:hidden}
-.ratio{all:unset;cursor:pointer;background:var(--band);padding:20px;display:grid;gap:8px;min-width:0}
-.ratio:hover{background:color-mix(in srgb,var(--band-ink) 6%,var(--band))}
-.ratio .dish{font-size:12px;opacity:.7}
-.ratio .nums{font-family:var(--f-display);font-weight:900;font-size:30px;color:var(--red);letter-spacing:.02em;line-height:1.1}
-.ratio .what{font-size:13px;opacity:.9}
-.tips{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;align-items:center}
-.tip-label{font-size:12px;font-weight:700;opacity:.7;margin-right:4px}
-.tip{font-size:13px;border:1px solid color-mix(in srgb,var(--band-ink) 25%,transparent);border-radius:999px;padding:5px 14px}
-.tip b{color:var(--red);font-weight:700}
+/* 김장 특집 */
+.season .wrap{padding-block:0 80px}
+.season-in{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:center;border-top:2px solid var(--laver);padding-top:40px}
+.season .ph{aspect-ratio:5/4;border-radius:3px}
+.season h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,4vw,48px);line-height:1.15;letter-spacing:-.03em}
+.season p{margin:14px 0 0;color:var(--muted);max-width:42ch}
+.cups{display:flex;align-items:flex-end;gap:10px;margin-top:26px}
+.cups svg{width:34px;height:40px}
+.cups .cup-a{fill:var(--paper);stroke:var(--laver)}
+.cups .cup-b{fill:var(--chili-soft);stroke:var(--chili)}
+.cups figcaption{font-size:13px;color:var(--muted);margin-left:8px;line-height:1.45}
+.cups figcaption b{color:var(--laver)}
+.go{margin-top:26px;border:0;background:var(--chili);color:#fff;border-radius:6px;padding:11px 20px;font-weight:700;font-size:15px;cursor:pointer}
+.go:hover{filter:brightness(1.08)}
+.kin{margin-top:18px;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.kin button{border:0;background:none;padding:0;cursor:pointer;color:var(--laver);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+.kin button:hover{text-decoration-color:var(--chili)}
+
+/* 황금비율 */
+.ratios{background:var(--napa);color:var(--napa-ink)}
+.ratios .wrap{padding-block:64px}
+.ratios h2{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;color:var(--laver)}
+.ratios .lead{margin:8px 0 34px;font-size:14px}
+.rlist{display:grid;gap:0}
+.ratio{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,11em) minmax(0,auto) minmax(0,1fr);gap:8px 32px;align-items:baseline;padding:16px 0;border-top:1px solid color-mix(in srgb,var(--napa-ink) 22%,transparent)}
+.ratio:last-child{border-bottom:1px solid color-mix(in srgb,var(--napa-ink) 22%,transparent)}
+.ratio .dish{font-weight:700;color:var(--laver)}
+.ratio .nums{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,4vw,44px);line-height:1;letter-spacing:-.02em;color:var(--laver);white-space:nowrap}
+.ratio .nums i{font-style:normal;font-weight:400;color:var(--chili);padding:0 .12em}
+.ratio .what{font-size:14px}
+.ratio:hover .dish{text-decoration:underline;text-underline-offset:4px}
+.ratio:focus-visible{outline:2px solid var(--chili);outline-offset:4px}
+.basics{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px 32px;font-size:14px}
+.basics h3{grid-column:1/-1;font-size:15px;color:var(--laver)}
+.basics p{margin:0}
+.basics b{color:var(--laver)}
+@media (max-width:720px){.ratio{grid-template-columns:minmax(0,1fr)}.ratio .nums{white-space:normal}}
 
 /* 상세 패널 */
-.overlay{position:fixed;inset:0;background:rgba(10,10,10,.5);z-index:20;display:flex;justify-content:flex-end}
-.panel{background:var(--bg);width:min(640px,100%);height:100%;overflow-y:auto;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow)}
-.panel .cover{position:relative;aspect-ratio:16/10;border-radius:0}
-.panel .close{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));z-index:2;border:0;background:var(--bg);border-radius:999px;padding:7px 16px;cursor:pointer;font-size:13px;font-weight:700;box-shadow:var(--shadow)}
-.panel .credit{font-size:11px;color:var(--muted);padding:6px 28px 0}
-.panel .inner{padding:20px max(28px,env(safe-area-inset-right,0px)) 0 28px;display:grid;gap:24px}
-.panel h2{font-family:var(--f-display);font-weight:900;font-size:34px;line-height:1.15;letter-spacing:-.01em;margin-top:6px}
-.panel .lead{margin:8px 0 0;color:var(--muted)}
-.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:12px}
-.facts div{padding:12px 14px;display:grid;gap:2px;min-width:0}
-.facts div+div{border-left:1px solid var(--line)}
-.facts small{font-size:11px;color:var(--muted)}
-.facts b{font-size:14px;font-weight:700}
-.panel h4{margin:0 0 8px;font-size:12px;letter-spacing:.12em;color:var(--muted)}
-.ing{list-style:none;margin:0;padding:0}
-.ing li{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
-.ing li .amt{font-family:var(--f-num);font-size:13px;color:var(--red);text-align:right}
-.ing .grp{font-size:12px;font-weight:700;color:var(--ink);border-bottom:0;padding-top:16px}
-ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:14px}
-ol.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;font-size:14.5px}
-ol.steps li::before{content:counter(s);font-family:var(--f-num);font-size:12px;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;margin-top:1px}
-.kick{background:var(--red-soft);border-radius:12px;padding:16px 18px;font-size:14px;display:grid;gap:8px}
-.kick b{font-family:var(--f-display);font-weight:900}
-.kick ul{margin:0;padding-left:18px;display:grid;gap:4px}
-.note{font-size:12px;color:var(--muted)}
-.note a{color:var(--ink)}
+.overlay{position:fixed;inset:0;background:rgba(15,20,17,.5);z-index:50;display:flex;justify-content:flex-end}
+.overlay[hidden]{display:none}
+.panel{background:var(--paper);width:min(640px,100%);height:100%;overflow-y:auto;overscroll-behavior:contain;animation:slide .28s cubic-bezier(.2,.7,.2,1)}
+@keyframes slide{from{transform:translateX(32px);opacity:0}}
+.panel .cover{aspect-ratio:16/10;border-radius:0}
+.close{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:2;border:0;background:var(--paper);border-radius:6px;padding:7px 12px;font-size:14px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.credit{font-size:12px;color:var(--muted);padding:8px 28px 0}
+.credit a{color:var(--muted)}
+.inner{padding:22px 28px 48px;display:grid;gap:32px}
+.panel .cat{font-size:13px;color:var(--chili);font-weight:700}
+.panel h2{font-family:var(--f-display);font-weight:800;font-size:36px;line-height:1.15;letter-spacing:-.03em;margin-top:6px}
+.panel .lead{margin:10px 0 0;color:var(--muted);font-size:15.5px}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:18px;font-size:14px;color:var(--muted)}
+.facts b{color:var(--laver);font-weight:700;margin-left:6px}
+.trust{font-size:12px;border-radius:4px;padding:1px 7px;font-weight:500}
+.trust.hi{background:var(--napa);color:var(--napa-ink)}
+.trust.mid{background:color-mix(in srgb,var(--oil) 16%,transparent);color:var(--oil)}
+.trust.lo{background:var(--chili-soft);color:var(--chili)}
+.panel h4{font-family:var(--f-display);font-weight:800;font-size:20px;letter-spacing:-.02em;margin-bottom:10px}
+.ing{list-style:none;margin:0;padding:0;columns:2 220px;column-gap:28px}
+.ing li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dotted var(--line);font-size:14.5px;break-inside:avoid}
+.ing .amt{color:var(--chili);font-weight:500;text-align:right}
+.ing .grp{font-weight:700;border-bottom:0;padding-top:14px;font-size:13px;color:var(--muted)}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:16px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:8px;font-size:15px}
+ol.steps li::before{content:counter(s);font-family:var(--f-display);font-weight:800;font-size:22px;line-height:1.1;color:var(--chili)}
+.kick{background:var(--napa);color:var(--napa-ink);border-radius:6px;padding:18px 20px;font-size:14.5px}
+.kick h4{color:var(--laver);font-size:17px;margin-bottom:6px}
+.kick ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.note{font-size:13px;color:var(--muted)}
+.note a{color:var(--laver)}
 
-/* 책 목차 */
-.book .wrap{padding-block:56px 24px}
-.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:28px}
-.part h3{font-size:13px;font-weight:700;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:8px;display:flex;justify-content:space-between}
-.part h3 span{font-family:var(--f-num);color:var(--muted);font-weight:500}
-.part ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:14px;color:var(--muted)}
-.part li button{background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font-weight:500;text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:4px;text-align:left}
-
-footer .wrap{padding-block:32px 64px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:grid;gap:10px}
-footer ul{margin:0;padding-left:18px;columns:2 280px;column-gap:32px}
+/* 하단 */
+footer{border-top:1px solid var(--line)}
+footer .wrap{padding-block:36px 64px;font-size:13px;color:var(--muted);display:grid;gap:12px;max-width:1200px}
+footer p{margin:0;max-width:72ch}
+footer details summary{cursor:pointer;color:var(--laver);font-weight:500}
+footer ul{margin:12px 0 0;padding-left:18px;columns:2 300px;column-gap:32px}
 footer a{color:var(--muted)}
 
 @media (max-width:820px){
-  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:28px;padding-block:36px 32px}
-  .feat{grid-template-columns:minmax(0,1fr)}
-  .feat .ph{min-height:220px}
-  .feat .body{padding:22px}
-  .topbar nav{display:none}
+  .season-in{grid-template-columns:minmax(0,1fr)}
+  .top nav{gap:14px}
+  .bar{margin-top:40px}
 }
 @media (max-width:480px){
-  .facts{grid-template-columns:minmax(0,1fr)}
-  .facts div+div{border-left:0;border-top:1px solid var(--line)}
-  .panel h2{font-size:28px}
+  .panel h2{font-size:30px}
+  .inner{padding:20px 20px 40px}
+  .credit{padding-inline:20px}
 }
-@media (prefers-reduced-motion:reduce){.ph img{transition:none}.card:hover .ph img{transform:none}}
+@media (prefers-reduced-motion:reduce){.panel{animation:none}}
 </style>
 
-<header class="topbar"><div class="wrap">
-  <div class="brand">집밥 <i>레시피북</i></div>
-  <nav><a href="#recipes">레시피</a><a href="#ratios">황금비율</a><a href="#books">책 목차</a></nav>
+<header class="top"><div class="wrap">
+  <div class="brand">집밥 레시피북</div>
+  <nav><a href="#recipes">레시피</a><a href="#kimjang">김장</a><a href="#ratios">황금비율</a></nav>
 </div></header>
 
-<section class="hero"><div class="wrap">
-  <div>
-    <div class="kicker">셰프 · 방송 · 책에서 검증된 집밥</div>
-    <h1>오늘 저녁,<br>실패 없는 한 끼</h1>
-    <p>여기저기 흩어진 좋은 레시피를 한곳에 모았습니다. 냉장고에 있는 재료로 찾고, 분량과 순서를 바로 확인하세요.</p>
-    <div class="stats" id="stats"></div>
+<section class="ask"><div class="wrap">
+  <h1><label for="q">오늘 냉장고에</label> <span class="slot"><input id="q" type="search" placeholder="무" autocomplete="off" enterkeyhint="search" aria-label="재료나 요리 이름"></span> 있어요</h1>
+  <div class="sub">
+    <p>재료 이름을 넣으면 그걸로 만들 수 있는 레시피만 남습니다.</p>
+    <div class="picks" id="picks" role="group" aria-label="자주 찾는 재료"></div>
   </div>
-  <div class="mosaic" id="mosaic"></div>
 </div></section>
 
-<section class="feature"><div class="wrap"><div class="feat" id="feat"></div></div></section>
+<div class="spread" id="spread"></div>
 
-<div class="toolbar" id="recipes"><div class="wrap">
-  <div class="trow">
-    <label class="search" for="q">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="요리 또는 재료 검색 (예: 돼지고기, 무, 굴소스)" autocomplete="off">
-    </label>
-    <select id="chefSel" aria-label="셰프"></select>
-  </div>
-  <div class="chips" id="chips" role="group" aria-label="분류"></div>
+<div class="bar" id="recipes"><div class="wrap">
+  <div class="tabs" id="tabs" role="group" aria-label="분류"></div>
+  <select id="chefSel" aria-label="셰프"></select>
 </div></div>
 
 <main class="list"><div class="wrap">
-  <div class="result-line" id="resultLine"></div>
+  <div class="status" id="status"></div>
   <div class="grid" id="grid"></div>
 </div></main>
 
-<section class="band" id="ratios"><div class="wrap">
-  <div class="sec-h"><h2>외워두면 평생 쓰는 비율</h2><small>큰술(밥숟가락) 기준 · 누르면 레시피가 열립니다</small></div>
-  <div class="ratio-grid" id="ratioGrid"></div>
-  <div class="tips">
-    <span class="tip-label">류수영 셰프의 기본기</span>
-    <span class="tip"><b>식초 1큰술</b> 찌개 마무리에</span>
-    <span class="tip"><b>후추 20바퀴</b> 기본 단위</span>
-    <span class="tip"><b>간장</b>은 팬 가장자리에서 끓여 섞기</span>
-    <span class="tip"><b>고춧가루</b>는 볶아서 고추기름</span>
-    <span class="tip"><b>고기</b>는 기름 없이 먼저 굽기</span>
-    <span class="tip"><b>배 음료 1캔</b> 연육 + 단맛</span>
+<section class="season" id="kimjang"><div class="wrap"><div class="season-in" id="season"></div></div></section>
+
+<section class="ratios" id="ratios"><div class="wrap">
+  <h2>외워두면 평생 쓰는 비율</h2>
+  <p class="lead">숫자는 큰술(밥숟가락) 기준입니다. 줄을 누르면 해당 레시피가 열립니다.</p>
+  <div class="rlist" id="rlist"></div>
+  <div class="basics">
+    <h3>류수영 셰프가 늘 지키는 기본기</h3>
+    <p><b>식초 1큰술</b>을 찌개 마무리에 넣으면 맛이 또렷해집니다.</p>
+    <p><b>후추는 20바퀴</b>가 한 번 갈 때의 기본 단위입니다.</p>
+    <p><b>간장</b>은 팬 가장자리에서 먼저 끓인 뒤 섞습니다.</p>
+    <p><b>고춧가루</b>는 기름에 볶아 고추기름부터 냅니다.</p>
+    <p><b>고기</b>는 기름 없이 먼저 구워 기름을 뺍니다.</p>
+    <p><b>배 음료 1캔</b>이면 연육과 단맛이 한 번에 됩니다.</p>
   </div>
 </div></section>
 
-<section class="book" id="books"><div class="wrap">
-  <div class="sec-h"><h2>레시피 책 목차</h2><small>류수영 『류수영의 평생 레시피』(세미콜론, 2025) · 밑줄 메뉴는 상세 레시피가 있음</small></div>
-  <div class="parts" id="parts"></div>
-</div></section>
-
 <footer><div class="wrap">
-  <div><b>신뢰도</b> — <span class="trust hi">레시피 플랫폼에 분량까지 정리</span> · <span class="trust mid">기사·블로그 재현</span> · <span class="trust lo">출처마다 분량이 다름</span></div>
-  <div>방송·책 원본과 분량이 다를 수 있습니다. 정확한 분량은 각 레시피의 출처 원본을 확인하세요. 2026년 11월부터 수집.</div>
-  <div><b>레시피 출처</b></div><ul id="srcs"></ul>
-  <div><b>사진</b> — Wikimedia Commons, 각 저작자·라이선스 표기. 사진은 요리 예시이며 레시피 완성본과 다를 수 있습니다.</div><ul id="credits"></ul>
+  <p>분량은 방송·책 원본과 다를 수 있습니다. 레시피마다 출처 신뢰도를 표시했습니다: <span class="trust hi">플랫폼 정리</span> 레시피 플랫폼에 분량까지 정리됨, <span class="trust mid">기사·블로그</span> 기사나 블로그 재현, <span class="trust lo">분량 제각각</span> 출처마다 분량이 다름.</p>
+  <p>사진은 Wikimedia Commons의 자유 이용 사진으로, 요리 예시이며 완성본과 다를 수 있습니다. 2026년 11월부터 수집.</p>
+  <details><summary>레시피 출처 보기</summary><ul id="srcs"></ul></details>
+  <details><summary>사진 저작자 보기</summary><ul id="credits"></ul></details>
 </div></footer>
 
 <div class="overlay" id="overlay" hidden>
@@ -266,7 +258,6 @@ const S={
   daum2:["다음 · 오징어볶음 방송 기사","https://v.daum.net/v/PTQfG7kU3j"],
   cafe1:["다음카페 · 오징어볶음 재현","https://m.cafe.daum.net/cheonan-GBP/OdzR/1707"],
   man4:["만개의레시피 · 토마토 파스타","https://www.10000recipe.com/recipe/6976110"],
-  watcha:["왓챠피디아 · 평생 레시피 목차","https://pedia.watcha.com/en/contents/byLjjYM"],
   man5:["만개의레시피 · 깍두기 (무 2kg)","https://www.10000recipe.com/recipe/7063048"],
   man6:["만개의레시피 · 깍두기 (무 3kg)","https://www.10000recipe.com/recipe/7048595"],
   man7:["만개의레시피 · 알배추 겉절이","https://www.10000recipe.com/recipe/7083177"],
@@ -437,14 +428,6 @@ const RATIOS=[
  {dish:"전간장",nums:[3,1,1],what:"간장 : 식초 : 설탕",id:"jeonganjang"}
 ];
 
-const BOOK=[
- ["평생 특식",["평생 제육볶음","긴급제육 119","만 원 닭볶음탕","만 원 갈비찜","원 팬 등갈비","꽈리멸치 치킨","냄비 바비큐","초간단 바싹 불고기","갈비치킨","어향가지","모두의 닭백숙","김치찜","버터 새우","버터 감바스","돈파육","양념 육회","만 원 찜닭","고추장 버터 등갈비","만 원 반반치킨","오징어 회무침과 천 원 깻잎전","간장게장","양념게장"]],
- ["평생 밥",["평생 김밥","평생 김치볶음밥","달걀볶음밥","매콤 게살볶음밥","스팸 덮밥","10분 리소토","10분 달걀덮밥","어남선생 파에야","에그 전복죽","무수분 마늘 카레"]],
- ["평생 면",["원 팬 토마토 버터 파스타","차돌볶음 파스타","스팸 케첩 파스타","명란 버터 파스타","원 팬 우유 버터 파스타","원 팬 우유 버터 봉골레","원 팬 카르보나라","보일링 크랩 골뱅이 소면","참간초면","원 팬 삼겹 잡채","분식집 라볶이","어묵국수","설마고추장비빔면"]],
- ["평생 국·탕·찌개",["초간단 홍합탕","한우양지미역국","어남선생 감자탕 완결판","평생 김치찌개","평생 된장찌개","스팸 순두부찌개","고추장찌개","로제 부대찌개","녹두삼계탕","러브 황태해장국","평생 육개장"]],
- ["평생 간식",["즉석 떡볶이","평생 떡볶이","짜장 떡볶이","궁중 떡볶이","휴게소 버터감자","크레이지 고구마","달걀 샌드위치","콘치즈","꿀새우피자 한 판","굴전 한 판","떡꼬치","크림치즈 연어 샌드위치","원조 길거리 토스트","치즈 퐁뒤","허니마요 떡볶이","만두피 추로스","프렌치 토스트","사치빵","감자 수프","호감 수프","당근 수프","새우 타파스"]]
-];
-const BOOKLINK={"평생 제육볶음":"jeyuk","만 원 닭볶음탕":"dakbokkeum","만 원 갈비찜":"galbijjim","초간단 바싹 불고기":"bassak","어향가지":"eohyang","무수분 마늘 카레":"curry","원 팬 토마토 버터 파스타":"tomato","명란 버터 파스타":"myeongran","평생 김치찌개":"kimchi","고추장찌개":"gochujang","평생 떡볶이":"tteok"};
 
 // chef 필드가 없는 레시피는 류수영 레시피
 R.forEach(r=>{r.chef=r.chef||"류수영"});
@@ -489,86 +472,106 @@ try{const c=localStorage.getItem("ryu-cat"); if(CATS.includes(c)) cat=c;}catch(e
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const byId=id=>R.find(x=>x.id===id);
 const photo=(k,name,cls="")=>{const u=imgURL(k);
   return `<div class="ph ${cls}${u?"":" noimg"}" data-initial="${esc(name.trim()[0])}">${u?`<img src="${u}" alt="${esc(name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:""}</div>`;};
 // 이미지가 막히거나 실패하면 대체 이미지로
 document.addEventListener("error",e=>{const t=e.target; if(t.tagName==="IMG"&&t.parentElement.classList.contains("ph")){t.parentElement.classList.add("noimg"); t.remove();}},true);
 
-const bookCount=BOOK.reduce((a,p)=>a+p[1].length,0);
-$("#stats").innerHTML=`<div><b>${R.length}</b><span>상세 레시피</span></div><div><b>${CHEFS.length}</b><span>셰프·출처</span></div><div><b>${CATS.length-1}</b><span>분류</span></div><div><b>${bookCount}</b><span>책 목차 메뉴</span></div>`;
-$("#mosaic").innerHTML=[["hero","배추김치"],["tteok","떡볶이"],["galbijjim","갈비찜"]].map(([k,n])=>photo(k,n)).join("");
-
-const kimchiR=R.filter(r=>r.cat==="김치");
-$("#feat").innerHTML=`${photo("kimjang","김장")}
-  <div class="body">
-    <div class="kicker">11월 제철 특집</div>
-    <h2>올해 김장, 배추 절이기부터<br>종이컵으로 계량해요</h2>
-    <p>배추 3포기 기준 천일염 6컵. 저녁에 절여 다음 날 버무리는 집 김장 일정과 동치미·깍두기·총각김치까지.</p>
-    <div class="row"><span class="pill">배추 3포기</span><span class="pill">절임 8~10시간</span><span class="pill">김치 ${kimchiR.length}종</span></div>
-    <button class="btn" data-id="kimjang">김장김치 레시피 보기</button>
-    <div class="mini">${kimchiR.filter(r=>r.id!=="kimjang").map(r=>`<button data-id="${r.id}">${esc(r.name)}</button>`).join("")}</div>
-  </div>`;
-
-$("#ratioGrid").innerHTML=RATIOS.map(r=>{const who=(R.find(x=>x.id===r.id)||{}).chef||"";
-  return `<button class="ratio" data-id="${r.id}"><div class="dish">${esc(r.dish)} · ${esc(who)}</div><div class="nums">${r.nums.join(" : ")}</div><div class="what">${esc(r.what)}</div></button>`}).join("");
-
-$("#chefSel").innerHTML=["전체",...CHEFS].map(c=>`<option value="${esc(c)}">${c==="전체"?"모든 셰프":esc(c)}</option>`).join("");
-$("#chefSel").addEventListener("change",e=>{chef=e.target.value; render();});
-
-function renderChips(){
-  $("#chips").innerHTML=CATS.map(c=>{const n=c==="전체"?R.length:R.filter(r=>r.cat===c).length;
-    return `<button class="chip" aria-pressed="${c===cat}" data-c="${c}">${c}<span class="n">${n}</span></button>`}).join("");
-}
 function matches(r,q){
   if(!q) return true;
   const hay=[r.name,r.chef,r.hook,r.cat,...r.keys,...r.ing.map(i=>i[0])].join(" ").toLowerCase();
   return q.toLowerCase().split(/\s+/).filter(Boolean).every(t=>hay.includes(t));
 }
+
+// 자주 찾는 재료: 실제로 걸리는 레시피가 있는 것만
+const PICKS=["돼지고기","무","배추","두부","대파","오징어","계란","고추장"].filter(p=>R.some(r=>matches(r,p)));
+$("#picks").innerHTML=PICKS.map(p=>`<button data-pick="${esc(p)}" aria-pressed="false">${esc(p)}</button>`).join("");
+
+$("#spread").innerHTML=["tteok","kimchi","galbijjim","musaengchae","bulgogi","dubukimchi"].map(byId).filter(Boolean)
+  .map(r=>`<button data-id="${r.id}" aria-label="${esc(r.name)} 레시피 열기">${photo(r.id,r.name)}<span>${esc(r.name)}</span></button>`).join("");
+
+// 김장 특집: 천일염 종이컵 6컵 = 절임물 3컵 + 줄기에 뿌릴 3컵
+const cup=c=>`<svg viewBox="0 0 34 40" aria-hidden="true"><path class="${c}" stroke-width="1.6" d="M3 3h28l-4 34H7z"/></svg>`;
+const kimchiR=R.filter(r=>r.cat==="김치"&&r.id!=="kimjang");
+$("#season").innerHTML=`${photo("kimjang","김장")}
+  <div>
+    <h2>올해 김장은 배추 절이기부터</h2>
+    <p>배추 3포기면 천일염 종이컵 6컵. 저녁에 절여 두고 다음 날 아침 씻어 버무리는 집 김장 일정 그대로 정리했습니다.</p>
+    <figure class="cups" style="margin:26px 0 0">${cup("cup-a").repeat(3)}${cup("cup-b").repeat(3)}
+      <figcaption><b>3컵</b>은 물 6L에 풀어 절임물로<br><b>3컵</b>은 줄기 사이에 뿌리기</figcaption></figure>
+    <button class="go" data-id="kimjang">김장김치 레시피 열기</button>
+    <div class="kin">같이 담그기 좋은 김치 ${kimchiR.map(r=>`<button data-id="${r.id}">${esc(r.name)}</button>`).join("")}</div>
+  </div>`;
+
+$("#rlist").innerHTML=RATIOS.map(r=>{const who=(byId(r.id)||{}).chef||"";
+  return `<button class="ratio" data-id="${r.id}"><span class="dish">${esc(r.dish)}<br><small style="font-weight:400">${esc(who)}</small></span><span class="nums">${r.nums.join("<i>:</i>")}</span><span class="what">${esc(r.what)}</span></button>`}).join("");
+
+$("#chefSel").innerHTML=["전체",...CHEFS].map(c=>`<option value="${esc(c)}">${c==="전체"?"모든 셰프":esc(c)}</option>`).join("");
+$("#chefSel").addEventListener("change",e=>{chef=e.target.value; render();});
+
+function renderTabs(){
+  $("#tabs").innerHTML=CATS.map(c=>{const n=c==="전체"?R.length:R.filter(r=>r.cat===c).length;
+    return `<button class="tab" aria-pressed="${c===cat}" data-c="${c}">${c}<sup>${n}</sup></button>`}).join("");
+}
 function render(){
   const q=$("#q").value.trim();
+  document.querySelectorAll("[data-pick]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pick===q));
   const list=R.filter(r=>(cat==="전체"||r.cat===cat)&&(chef==="전체"||r.chef===chef)&&matches(r,q));
-  $("#resultLine").textContent=`${list.length}개 레시피${q?` · "${q}" 검색`:""}${cat!=="전체"?` · ${cat}`:""}${chef!=="전체"?` · ${chef}`:""}`;
+  const filtered=q||cat!=="전체"||chef!=="전체";
+  const what=[q&&`"${q}"`,cat!=="전체"&&cat,chef!=="전체"&&chef].filter(Boolean).join(", ");
+  $("#status").innerHTML=`<span>${filtered?`${esc(what)}로 찾은 레시피 ${list.length}개`:`레시피 ${list.length}개`}</span>${filtered?`<button data-reset>조건 지우기</button>`:""}`;
   $("#grid").innerHTML=list.length?list.map(r=>`
     <button class="card" data-id="${r.id}">
-      <div style="position:relative">${photo(r.id,r.name)}<span class="badge">${esc(r.cat)}</span></div>
+      ${photo(r.id,r.name)}
       <div class="t">
-        <div class="chef">${esc(r.chef)} <span class="trust ${r.trust}">${TRUST[r.trust]}</span></div>
+        <div class="cat">${esc(r.cat)}</div>
         <h3>${esc(r.name)}</h3>
         <p class="hook">${esc(r.hook)}</p>
+        <div class="meta"><b>${esc(r.chef)}</b>, ${esc(r.time)}, ${esc(r.serv)}</div>
       </div>
-      <div class="meta"><span>${esc(r.time)}</span><span>${esc(r.serv)}</span></div>
-    </button>`).join(""):`<div class="empty">맞는 레시피가 없습니다. 다른 재료 이름으로 검색해 보세요.</div>`;
+    </button>`).join(""):`<div class="empty">조건에 맞는 레시피가 없습니다. 재료 이름을 바꾸거나 <button data-reset>조건을 지워 보세요</button>.</div>`;
 }
+function reset(){ $("#q").value=""; cat="전체"; chef="전체"; $("#chefSel").value="전체"; try{localStorage.setItem("ryu-cat",cat)}catch(_){}; renderTabs(); render(); }
+
+let lastFocus=null;
 function openR(id){
-  const r=R.find(x=>x.id===id); if(!r) return;
-  const credit=IMG[r.id]?`<div class="credit">사진: <a href="${filePage(r.id)}" target="_blank" rel="noopener">${esc(IMG[r.id][2])}</a> · ${IMG[r.id][3]} · 요리 예시 사진</div>`:"";
+  const r=byId(id); if(!r) return;
+  lastFocus=document.activeElement;
+  const credit=IMG[r.id]?`<div class="credit">사진: <a href="${filePage(r.id)}" target="_blank" rel="noopener">${esc(IMG[r.id][2])}</a>, ${IMG[r.id][3]}. 요리 예시 사진입니다.</div>`:"";
   $("#panel").innerHTML=`
-    <div style="position:relative"><button class="close" id="closeBtn">닫기 ✕</button>${photo(r.id,r.name,"cover")}</div>${credit}
+    <div style="position:relative"><button class="close" id="closeBtn">닫기</button>${photo(r.id,r.name,"cover")}</div>${credit}
     <div class="inner">
-      <div><div class="chef" style="display:flex;gap:10px;font-size:12px;color:var(--muted)"><span>${esc(r.cat)} · ${esc(r.chef)}</span><span class="trust ${r.trust}">${TRUST[r.trust]}</span></div>
-        <h2 id="p-title">${esc(r.name)}</h2><p class="lead">${esc(r.hook)}</p></div>
-      <div class="facts"><div><small>시간</small><b>${esc(r.time)}</b></div><div><small>분량</small><b>${esc(r.serv)}</b></div><div><small>셰프·출처</small><b>${esc(r.chef)}</b></div></div>
+      <div>
+        <div class="cat">${esc(r.cat)}</div>
+        <h2 id="p-title">${esc(r.name)}</h2>
+        <p class="lead">${esc(r.hook)}</p>
+        <div class="facts"><span>시간<b>${esc(r.time)}</b></span><span>분량<b>${esc(r.serv)}</b></span><span>셰프<b>${esc(r.chef)}</b></span><span class="trust ${r.trust}">${TRUST[r.trust]}</span></div>
+      </div>
       <div><h4>재료</h4><ul class="ing">${r.ing.map(i=>i.length===1?`<li class="grp">${esc(i[0])}</li>`:`<li><span>${esc(i[0])}</span><span class="amt">${esc(i[1])}</span></li>`).join("")}</ul></div>
       <div><h4>만드는 순서</h4><ol class="steps">${r.steps.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol></div>
-      <div class="kick"><b>핵심 팁</b><ul>${r.kick.map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div>
-      <div class="note">레시피 출처: ${r.src.map(k=>`<a href="${S[k][1]}" target="_blank" rel="noopener">${esc(S[k][0])}</a>`).join(" · ")}</div>
+      <div class="kick"><h4>실패하지 않는 요령</h4><ul>${r.kick.map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div>
+      <div class="note">레시피 출처: ${r.src.map(k=>`<a href="${S[k][1]}" target="_blank" rel="noopener">${esc(S[k][0])}</a>`).join(", ")}</div>
     </div>`;
   $("#overlay").hidden=false; $("#panel").scrollTop=0; document.body.style.overflow="hidden"; $("#closeBtn").focus();
 }
-function closeR(){ $("#overlay").hidden=true; document.body.style.overflow=""; }
+function closeR(){ $("#overlay").hidden=true; document.body.style.overflow=""; if(lastFocus) lastFocus.focus(); }
 
-$("#parts").innerHTML=BOOK.map(([p,items])=>`<div class="part"><h3>${p}<span>${items.length}</span></h3><ul>${
-  items.map(n=>BOOKLINK[n]?`<li><button data-id="${BOOKLINK[n]}">${esc(n)}</button></li>`:`<li>${esc(n)}</li>`).join("")}</ul></div>`).join("");
 $("#srcs").innerHTML=Object.values(S).map(([t,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("");
-$("#credits").innerHTML=Object.keys(IMG).map(k=>`<li><a href="${filePage(k)}" target="_blank" rel="noopener">${esc(IMG[k][0].replace(/_/g," "))}</a> — ${esc(IMG[k][2])}, ${IMG[k][3]}</li>`).join("");
+$("#credits").innerHTML=Object.keys(IMG).map(k=>`<li><a href="${filePage(k)}" target="_blank" rel="noopener">${esc(IMG[k][0].replace(/_/g," "))}</a>, ${esc(IMG[k][2])}, ${IMG[k][3]}</li>`).join("");
 
+const toList=()=>{ if(window.scrollY>$("#recipes").offsetTop) $("#recipes").scrollIntoView({behavior:"smooth"}); };
 document.addEventListener("click",e=>{
-  const chip=e.target.closest(".chip");
-  if(chip){cat=chip.dataset.c; try{localStorage.setItem("ryu-cat",cat)}catch(_){}; renderChips(); render(); return;}
+  const tab=e.target.closest(".tab");
+  if(tab){cat=tab.dataset.c; try{localStorage.setItem("ryu-cat",cat)}catch(_){}; renderTabs(); render(); toList(); return;}
+  const pick=e.target.closest("[data-pick]");
+  if(pick){$("#q").value=$("#q").value.trim()===pick.dataset.pick?"":pick.dataset.pick; render(); $("#recipes").scrollIntoView({behavior:"smooth"}); return;}
+  if(e.target.closest("[data-reset]")){reset(); return;}
   if(e.target.id==="closeBtn"||e.target.id==="overlay"){closeR(); return;}
   const t=e.target.closest("[data-id]"); if(t) openR(t.dataset.id);
 });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!$("#overlay").hidden) closeR(); });
 $("#q").addEventListener("input",render);
-renderChips(); render();
+$("#q").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#recipes").scrollIntoView({behavior:"smooth"}); });
+renderTabs(); render();
 </script>
