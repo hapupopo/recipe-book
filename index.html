@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>집밥 레시피북</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 분식집 메뉴판 헤더 → 황금비율 띠 → 검색/필터 툴바 → 레시피 카드 그리드 → 책 목차 인덱스. 카드를 누르면 상세 패널. */
+:root{
+  --bg:#F6F7F3; --surface:#FFFFFF; --ink:#1C211B; --muted:#646C61; --line:#DCE0D6;
+  --leek:#2E6A3A; --leek-soft:#E3EEE2; --chili:#C2381F; --chili-soft:#F8E4DE; --soy:#3A2A1C;
+  --f-display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121511; --surface:#1B1F1A; --ink:#E7EBE3; --muted:#9AA295; --line:#30362E;
+  --leek:#86C391; --leek-soft:#22321F; --chili:#F07A60; --chili-soft:#3A221C; --soy:#E9D9C6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121511; --surface:#1B1F1A; --ink:#E7EBE3; --muted:#9AA295; --line:#30362E;
+  --leek:#86C391; --leek-soft:#22321F; --chili:#F07A60; --chili-soft:#3A221C; --soy:#E9D9C6; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1120px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;margin:0}
+a{color:var(--leek)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--leek);outline-offset:2px}
+
+header.hero{padding-block:40px 24px;display:grid;gap:12px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.hero h1{font-family:var(--f-display);font-weight:400;font-size:clamp(40px,8vw,76px);line-height:1;letter-spacing:-.01em}
+.hero h1 span{color:var(--chili)}
+.hero p{max-width:62ch;color:var(--muted);margin:0}
+.stats{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;color:var(--muted)}
+.stats b{font-family:var(--f-num);color:var(--ink);font-weight:500}
+
+/* 황금비율 */
+section.ratios{border-top:2px solid var(--ink);border-bottom:1px solid var(--line);padding-block:20px;margin-bottom:8px}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-h h2{font-family:var(--f-display);font-weight:400;font-size:26px}
+.sec-h small{color:var(--muted);font-size:13px}
+.ratio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.ratio{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:6px;min-width:0}
+.ratio .dish{font-size:12px;color:var(--muted);font-weight:500}
+.ratio .nums{font-family:var(--f-num);font-size:22px;color:var(--chili);letter-spacing:.02em}
+.ratio .what{font-size:13px}
+.bar{display:flex;height:6px;border-radius:3px;overflow:hidden;gap:2px}
+.bar i{display:block;background:var(--chili);opacity:.85}
+.bar i:nth-child(2n){background:var(--leek)}
+.tips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tip{font-size:13px;background:var(--leek-soft);color:var(--ink);border-radius:999px;padding:4px 12px}
+.tip b{color:var(--leek)}
+.tip-label{font-size:12px;font-weight:700;color:var(--muted);align-self:center;margin-right:4px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters select{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+
+/* 툴바 */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.toolbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 12px;display:grid;gap:10px;border-bottom:1px solid var(--line)}
+.search{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 12px}
+.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink);padding:11px 0;outline:none}
+.search svg{flex:none;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .n{font-family:var(--f-num);font-size:11px;opacity:.7;margin-left:4px}
+.result-line{font-size:13px;color:var(--muted)}
+
+/* 카드 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding-block:18px}
+.card{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;cursor:pointer;display:grid;gap:10px;align-content:start;min-width:0;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--ink);transform:translateY(-1px)}
+.card .top{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.cat{font-weight:500;color:var(--leek)}
+.card h3{font-size:19px;font-weight:700;line-height:1.3}
+.card .hook{font-size:13px;color:var(--muted);margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12px}
+.meta span{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 7px;font-family:var(--f-num)}
+.keys{display:flex;flex-wrap:wrap;gap:4px}
+.keys span{font-size:12px;color:var(--soy);background:var(--chili-soft);border-radius:3px;padding:1px 6px}
+.trust{font-size:11px;display:inline-flex;align-items:center;gap:5px}
+.trust::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.trust.hi{color:var(--leek)} .trust.mid{color:#B7861B} .trust.lo{color:var(--chili)}
+.empty{padding:40px 0;color:var(--muted);text-align:center}
+
+/* 상세 패널 */
+.overlay{position:fixed;inset:0;background:rgba(10,12,9,.45);z-index:20;display:flex;justify-content:flex-end}
+.panel{background:var(--surface);width:min(560px,100%);height:100%;overflow-y:auto;padding:24px max(20px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) 24px;padding-top:calc(24px + env(safe-area-inset-top,0px));display:grid;gap:18px;align-content:start}
+.panel .close{justify-self:end;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 14px;cursor:pointer;font-size:13px}
+.panel h2{font-family:var(--f-display);font-weight:400;font-size:34px;line-height:1.1}
+.panel h4{margin:0 0 6px;font-size:13px;letter-spacing:.08em;color:var(--muted)}
+.ing{list-style:none;margin:0;padding:0;display:grid;gap:0;border-top:1px solid var(--line)}
+.ing li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.ing li .amt{font-family:var(--f-num);color:var(--chili);text-align:right;white-space:nowrap}
+.ing .grp{font-size:12px;font-weight:700;color:var(--leek);border-bottom:0;padding-top:10px}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:8px}
+ol.steps li::marker{font-family:var(--f-num);color:var(--leek)}
+.kick{background:var(--leek-soft);border-radius:6px;padding:12px 14px;font-size:14px;display:grid;gap:6px}
+.kick ul{margin:0;padding-left:18px}
+.note{font-size:12px;color:var(--muted)}
+
+/* 책 목차 */
+section.book{padding-block:28px 0;border-top:2px solid var(--ink);margin-top:24px}
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
+.part h3{font-size:14px;font-weight:700;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:6px;display:flex;justify-content:space-between}
+.part h3 span{font-family:var(--f-num);color:var(--muted);font-weight:500}
+.part ul{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:14px}
+.part li button{background:none;border:0;padding:0;cursor:pointer;color:var(--leek);text-decoration:underline;text-underline-offset:3px;text-align:left}
+footer{margin-top:36px;font-size:12px;color:var(--muted);display:grid;gap:6px}
+footer ul{margin:0;padding-left:18px;columns:2 260px}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">셰프 · 방송 · 책에서 검증된 집밥 레시피 모음</div>
+    <h1>집밥 <span>레시피북</span></h1>
+    <p>여기저기 흩어진 좋은 레시피를 한곳에 모았습니다. 요리 이름이나 냉장고에 있는 재료로 검색하고, 카드를 누르면 재료 분량과 순서가 나옵니다.</p>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <section class="ratios" aria-labelledby="r-h">
+    <div class="sec-h"><h2 id="r-h">외워두면 평생 쓰는 비율</h2><small>숫자는 큰술(밥숟가락) 기준 비율</small></div>
+    <div class="ratio-grid" id="ratios"></div>
+    <div class="tips">
+      <span class="tip-label">류수영 셰프의 기본기</span>
+      <span class="tip"><b>식초 1큰술</b> 김치·고추장·된장찌개 마무리에</span>
+      <span class="tip"><b>후추 20바퀴</b> 갈아서 넣는 게 기본 단위</span>
+      <span class="tip"><b>간장은 팬 가장자리</b>에서 먼저 끓여 섞기</span>
+      <span class="tip"><b>고춧가루는 볶아서</b> 고추기름 내기 (비린내 제거)</span>
+      <span class="tip"><b>고기는 기름 없이</b> 먼저 노릇하게 굽기</span>
+      <span class="tip"><b>배 음료 1캔</b> 제육·불고기 연육 + 단맛</span>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="요리 또는 재료 검색 (예: 돼지고기, 가지, 굴소스)" autocomplete="off">
+    </label>
+    <div class="filters">
+      <div class="chips" id="chips" role="group" aria-label="분류"></div>
+      <select id="chefSel" aria-label="셰프"></select>
+    </div>
+    <div class="result-line" id="resultLine"></div>
+  </div>
+
+  <main class="grid" id="grid"></main>
+
+  <section class="book" aria-labelledby="b-h">
+    <div class="sec-h"><h2 id="b-h">레시피 책 목차</h2><small>류수영 『류수영의 평생 레시피』(세미콜론, 2025) · 밑줄 메뉴는 위에 상세 레시피가 있음</small></div>
+    <div class="parts" id="parts"></div>
+  </section>
+
+  <footer>
+    <div><b>신뢰도 표시</b> — <span class="trust hi">레시피 플랫폼(컬리·만개의레시피)에 분량까지 정리됨</span> · <span class="trust mid">언론 기사·블로그 재현</span> · <span class="trust lo">출처마다 분량이 다름</span></div>
+    <div>방송·책 원본과 분량이 다를 수 있습니다. 정확한 분량은 각 레시피의 출처 원본을 확인하세요. 2026년 11월부터 수집.</div>
+    <div><b>출처</b></div>
+    <ul id="srcs"></ul>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="p-title"></div>
+</div>
+
+<script>
+const S={
+  kurly1:["컬리 · 류수영 떡볶이","https://www.kurly.com/recipe/6720460d512b7f58a373ea91"],
+  kurly2:["컬리 · 무생채","https://lounge.kurly.com/recipe/6720460d512b7f58a373ea9e"],
+  kurly3:["컬리 · 고추장찌개","https://www.kurly.com/recipe/671764624701d5e8aa02ef0c"],
+  kurly4:["컬리 · 갈배불고기","https://lounge.kurly.com/recipe/671764624701d5e8aa02ef04"],
+  kurly5:["컬리 · 무수분 마늘카레","https://lounge.kurly.com/recipe/6720460d512b7f58a373eaa3"],
+  kurly6:["컬리 · 두부조림","https://www.kurly.com/recipe/671764624701d5e8aa02eee9"],
+  kurly7:["컬리 · 언양식 바싹불고기","https://www.kurly.com/recipe/67bea54c18faf90e2331dbca"],
+  kurly8:["컬리 · 매운 돼지갈비찜","https://www.kurly.com/recipe/677b96541d623218523b28d8"],
+  man1:["만개의레시피 · 제육볶음","https://www.10000recipe.com/recipe/7033528"],
+  man2:["만개의레시피 · 닭볶음탕","https://www.10000recipe.com/recipe/7003799"],
+  man3:["만개의레시피 · 어향가지","https://www.10000recipe.com/recipe/7014897"],
+  wk1:["위키트리 · 평생 김치찌개","https://www.wikitree.co.kr/articles/916533"],
+  wk2:["위키트리 · 추석 전 부치기","https://www.wikitree.co.kr/articles/979482"],
+  daum1:["다음 · 편스토랑 10분 레시피 5개","https://v.daum.net/v/y0CdNUDxxk"],
+  daum2:["다음 · 오징어볶음 방송 기사","https://v.daum.net/v/PTQfG7kU3j"],
+  cafe1:["다음카페 · 오징어볶음 재현","https://m.cafe.daum.net/cheonan-GBP/OdzR/1707"],
+  man4:["만개의레시피 · 토마토 파스타","https://www.10000recipe.com/recipe/6976110"],
+  watcha:["왓챠피디아 · 평생 레시피 목차","https://pedia.watcha.com/en/contents/byLjjYM"],
+  man5:["만개의레시피 · 깍두기 (무 2kg)","https://www.10000recipe.com/recipe/7063048"],
+  man6:["만개의레시피 · 깍두기 (무 3kg)","https://www.10000recipe.com/recipe/7048595"],
+  man7:["만개의레시피 · 알배추 겉절이","https://www.10000recipe.com/recipe/7083177"],
+  wk3:["위키트리 · 두부김치 당장 레시피","https://www.wikitree.co.kr/articles/942723"]
+};
+
+const R=[
+{id:"jeyuk",name:"평생 제육볶음",cat:"고기·특식",time:"30분",serv:"앞다리살 600g",trust:"hi",src:["man1"],
+ hook:"배 음료 한 캔과 식초가 고기를 부드럽게. 기름 없이 눌려 굽는 게 핵심.",keys:["돼지고기","고추장","배 음료"],
+ ing:[["재료"],["돼지 앞다리살","600g"],["양파","1개"],["대파","1대"],["양념"],["고추장","3큰술(듬뿍)"],["간장","2큰술"],["설탕","2큰술"],["갈아만든 배 음료","1캔(238ml)"],["식초","2큰술"],["다진 마늘","2큰술(1+1)"],["참기름","1큰술"],["후추","약간"]],
+ steps:["고기 핏물을 닦고 한입 크기로 썬다.","설탕·간장·고추장·배 음료·마늘 1큰술·식초·참기름을 섞어 고기를 버무린다.","기름 없이 중강불로 달군 팬에 고기를 펴고 뒤적이지 말고 바닥이 눌을 때까지 둔다.","노릇해지면 섞고, 양파·대파와 남은 양념을 넣어 3분 볶는다.","남은 마늘 1큰술과 후추로 마무리."],
+ kick:["뚜껑을 덮으면 국물 자작, 열면 양념이 착 붙는 스타일","재운 고기는 1~2일 숙성하면 더 맛있고 3~4일 안에 먹기","책에는 '긴급제육 119' 변형 버전도 있음"]},
+{id:"dakbokkeum",name:"만 원 닭볶음탕",cat:"고기·특식",time:"60분",serv:"4인분",trust:"hi",src:["man2"],
+ hook:"양배추를 깔아 물 대신 채수를 낸다. 양념은 고간설액 4:3:3:1.",keys:["닭","양배추","감자","고추장"],
+ ing:[["재료"],["닭볶음탕용 닭","1마리"],["양배추","1/2통"],["감자","4개"],["양파","1개"],["당근","1/2개"],["대파","1대"],["물","500ml"],["양념"],["고추장","4큰술(담뿍)"],["간장","3큰술"],["설탕","3큰술"],["멸치액젓","1큰술"],["다진 마늘","4큰술"]],
+ steps:["닭을 씻어 핏물을 빼고 소금으로 밑간한다.","양념 재료를 미리 섞어둔다.","기름 없는 팬에 닭을 껍질 쪽부터 5분 굽는다.","닭을 밀고 양배추를 깔아 닭기름에 구운 뒤 닭을 위에 올리고, 뚜껑 덮어 중불 10분.","양념을 넣고 고루 볶는다.","감자·당근·양파·대파와 물 500ml를 넣고 뚜껑 덮어 20분, 감자가 익으면 완성."],
+ kick:["고추장:간장:설탕:액젓 = 4:3:3:1","고추장 담뿍 1큰술 ≈ 30g","닭은 한 조각씩 올려야 찜처럼 되지 않는다"]},
+{id:"galbijjim",name:"만 원 갈비찜 (매운 돼지갈비찜)",cat:"고기·특식",time:"1시간 20분",serv:"4인분",trust:"hi",src:["kurly8"],
+ hook:"돼지갈비 1kg을 핏물 빼지 않고 바로 굽는다. 간장·참치액·설탕 5:5:5.",keys:["돼지갈비","참치액","케첩"],
+ ing:[["재료"],["돼지갈비(찜용)","1kg"],["대파","2대"],["양파","1개"],["청양고추","2개"],["물","500ml"],["양념"],["진간장","5큰술"],["참치액","5큰술"],["설탕","5큰술"],["고춧가루","3큰술"],["간 마늘","3큰술"],["토마토케첩","2큰술"],["식초","1큰술"],["후추","20바퀴"]],
+ steps:["갈비를 두세 번 씻어 뼛가루를 없앤다.","예열한 팬에 비계 쪽부터 올리고 소금 두 꼬집, 3분 뒤 뒤집어 바싹 굽는다.","설탕으로 코팅하고 식초를 넣은 뒤, 고기를 밀고 빈 곳에 간장·참치액을 끓인다.","고춧가루, 양파·대파·마늘·케첩을 넣어 양파 숨이 죽을 때까지 볶는다.","물과 후추를 넣고 끓으면 뚜껑 덮어 약불 40분.","강불로 5분 수분을 날리고 청양고추를 올린다."],
+ kick:["간장=참치액=설탕 같은 양","아이용은 고춧가루 1큰술로"]},
+{id:"bassak",name:"언양식 바싹불고기",cat:"고기·특식",time:"25분",serv:"3인분",trust:"hi",src:["kurly7"],
+ hook:"종이호일 위에 고기를 펴서 눌러 굽는 바삭 불고기.",keys:["소고기","굴소스","종이호일"],
+ ing:[["재료"],["불고기용 소고기","600g"],["식용유·통깨","약간"],["양념"],["황설탕","2큰술"],["간 마늘","1큰술"],["진간장","3큰술"],["굴소스","1큰술"],["식초","1/2큰술"],["참기름","1큰술"],["후추","20바퀴"]],
+ steps:["핏물을 닦고 고기를 잘게 썬다.","설탕·마늘을 먼저 버무려 단맛을 배게 한다.","간장·굴소스·식초·참기름·후추를 넣고 다시 버무린다.","종이호일에 고기를 넓게 펴서 달군 팬에 고기 면이 아래로 가게 올리고 뒤집개로 누른다.","중불 2분 뒤 호일을 떼고 뒤집어 2분 더. 통깨로 마무리."],
+ kick:["설탕 먼저, 간장은 나중","눌러 구워야 오그라들지 않는다","책 수록명은 '초간단 바싹 불고기'"]},
+{id:"bulgogi",name:"갈배불고기 (소불고기)",cat:"고기·특식",time:"45분",serv:"4인분",trust:"hi",src:["kurly4"],
+ hook:"배 음료 덕에 오래 재우지 않아도 바로 볶는다.",keys:["소고기","배 음료","간장"],
+ ing:[["재료"],["불고기용 소고기","600g"],["대파","1대"],["양파","1개"],["양념"],["진간장","10큰술"],["설탕","2큰술"],["물엿","2큰술"],["배 음료","1캔(238ml)"],["다진 마늘","1.5큰술"],["식초","2큰술"],["참기름","3큰술"],["소금","1/2작은술"]],
+ steps:["대파는 다지고 양파는 굵게 썬다.","양념을 모두 섞는다.","살짝 언 고기는 눌러 핏물을 빼고 양념을 숟가락으로 눌러 배게 한다(채소는 아직).","기름 두른 팬에 양파를 볶다 고기·대파·양념을 넣고 물 30ml를 더해 볶는다.","불 끄고 참기름·깨."],
+ kick:["달걀노른자나 냉면 사리와 같이","재우는 시간 생략 가능"]},
+{id:"eohyang",name:"어향가지",cat:"고기·특식",time:"40분",serv:"2~4인분",trust:"hi",src:["man3","daum1"],
+ hook:"중국집 메뉴를 집에서. 가지를 절여 전분만 묻혀 튀긴다.",keys:["가지","물엿","케첩","생강"],
+ ing:[["가지"],["가지","2개"],["설탕","1큰술"],["소금","1/2큰술"],["감자전분","3큰술"],["소스"],["다진 생강","2작은술"],["다진 마늘","1큰술"],["대파·청양고추","1/2대·1개"],["물엿","5~6큰술"],["진간장","1~2큰술"],["식초","1큰술"],["케첩","1~2큰술"],["설탕","1큰술"],["소금","2꼬집"],["전분물","전분 1/2큰술+물 1/4컵"]],
+ steps:["가지를 두툼하게 어슷 썰어 설탕·소금에 절인다.","물을 따로 넣지 않고 가지에서 나온 수분으로 전분 3큰술을 묻힌다.","170℃ 기름에 4분 튀긴다(전분물을 살짝 뿌려 1분 더 튀기면 더 바삭).","기름에 생강·마늘을 볶고 대파·고추를 넣는다.","약불에서 물엿·간장·식초·케첩·설탕·소금을 넣고 전분물로 농도를 맞춘다.","튀긴 가지 위에 소스를 끼얹는다."],
+ kick:["달면 물엿을 1큰술 줄이기","청양고추 3개로 매운맛 강화 가능"]},
+{id:"ojing",name:"오징어볶음",cat:"고기·특식",time:"20분",serv:"2~3인분",trust:"lo",src:["daum2","cafe1"],
+ hook:"2023년 2월 편스토랑 '어남키친'. 데치지 않고 생오징어를 바로 볶는다.",keys:["오징어","고추장"],
+ ing:[["양념 (재현 글 기준)"],["고추장","3큰술"],["고춧가루","2큰술"],["진간장","2큰술"],["설탕","1큰술"]],
+ steps:["오징어를 손질해 데치지 않고 준비한다.","양념을 미리 섞어둔다.","센 불에 채소와 오징어를 빠르게 볶고 양념을 넣는다.","덮밥으로 올리거나 칼국수 면과 비벼 안주로."],
+ kick:["방송 원본 분량은 확인되지 않음. 블로그마다 고추장 1~3큰술로 다름","같은 회차에 굴전 한 판, 홍합탕도 공개"]},
+{id:"tteok",name:"평생 떡볶이",cat:"분식·간식",time:"40분",serv:"3인분",trust:"hi",src:["kurly1"],
+ hook:"고춧가루가 고추장보다 많다. 4:3:2:2:2 비율의 분식집 맛.",keys:["떡","어묵","굴소스","고춧가루"],
+ ing:[["재료"],["떡볶이 떡","500g"],["사각어묵","4장"],["대파","1대"],["물","600ml"],["설탕(육수용)","1큰술"],["굵은소금","1/3큰술"],["다진 마늘","1/2큰술"],["양념"],["고춧가루","4큰술"],["설탕","3큰술"],["고추장","2큰술"],["간장","2큰술"],["굴소스","2큰술"],["식용유","1큰술"],["후추","20바퀴"]],
+ steps:["떡은 씻고 대파는 큼직하게, 어묵은 세모로 썬다.","양념 재료를 모두 섞어둔다.","물에 대파·어묵·설탕·마늘·소금을 넣고 2분 끓인다.","떡을 넣고 1~2분, 양념을 넣는다(1큰술은 남겨 마지막 간 조절용).","약불에서 4분 이상 뭉근히 끓인다."],
+ kick:["고춧가루:설탕:고추장:간장:굴소스 = 4:3:2:2:2","설탕은 육수와 양념 두 군데 들어간다","2026년 7월 한가인 유튜브에서 재현돼 다시 화제"]},
+{id:"toast",name:"참깨 토스트",cat:"분식·간식",time:"10분",serv:"1인분",trust:"mid",src:["daum1"],
+ hook:"버터에 설탕을 녹여 참깨를 붙이는 10분 간식.",keys:["식빵","버터","참깨"],
+ ing:[["재료"],["식빵","1~2장"],["버터","1조각"],["설탕","1.5큰술"],["참깨","넉넉히"]],
+ steps:["팬에 버터를 녹인다.","약불에서 설탕을 뿌려 갈색이 될 때까지 녹인다.","불을 끄고 참깨를 섞어 식빵 크기로 모은다.","식빵을 올려 눌러 붙이고 뒤집어 뒷면도 굽는다."],
+ kick:["설탕이 타기 쉬우니 약불 유지"]},
+{id:"kimchi",name:"평생 김치찌개",cat:"국·찌개",time:"60분",serv:"3~4인분",trust:"mid",src:["wk1"],
+ hook:"30일 연구작. 육수 없이 고기부터 볶고, 김치는 볶지 않는다.",keys:["김치","돼지고기","새우젓","식초"],
+ ing:[["재료"],["김치","1/4포기(600g)"],["김치 국물","100ml"],["돼지 앞다리살(찌개용)","300g"],["양파","1개"],["대파","1대"],["두부","1/2모"],["물","1L"],["양념"],["다진 마늘","1큰술"],["새우젓","1큰술"],["진간장","2큰술"],["고춧가루","2큰술"],["굵은소금","1작은술"],["식초","1큰술"]],
+ steps:["냄비를 중불 3분 예열, 기름 두르고 고기를 노릇하게 볶는다.","마늘을 볶다가 새우젓을 넣어 볶는다.","재료를 밀고 빈 곳에 간장을 끓여 섞는다.","약불로 줄여 고춧가루를 넣고 불을 끈 잔열로 고추기름을 낸다.","물·양파·대파·김치·김치 국물을 넣고 센 불, 끓으면 중불로 소금 넣고 뚜껑 덮어 약 40분.","30분쯤 간을 보고 식초와 두부를 넣어 데우면 완성."],
+ kick:["적당히 익은 김치, 굵은 새우젓 추천","짜면 소주잔 한 잔 물 추가","방송 후 한 달 만에 조회수 100만"]},
+{id:"gochujang",name:"고추장찌개 (광주식)",cat:"국·찌개",time:"30분",serv:"4인분",trust:"hi",src:["kurly3"],
+ hook:"편스토랑 통산 10승 메뉴. 버터로 고기 볶아 고추기름을 낸다.",keys:["돼지고기","고추장","두부","애호박"],
+ ing:[["재료"],["돼지 앞다리살","500g"],["감자","작은 것 1개"],["양파","작은 것 1개"],["애호박","조금"],["두부","1/2모"],["대파","1/2대"],["청양·홍고추","각 1개"],["버터","1조각"],["물","1/3컵 + 750ml"],["양념"],["고추장","3큰술"],["고춧가루","4큰술(2+2)"],["간장","2큰술"],["멸치액젓","1큰술"],["새우액젓","1큰술"],["간 마늘","1큰술"],["식초","1큰술"]],
+ steps:["버터에 고기를 볶다가 마늘·고춧가루 2큰술로 고추기름을 낸다.","대파·양파, 간장·고춧가루 2큰술·액젓 두 가지·고추장·물 1/3컵을 넣어 볶는다.","물 750ml와 감자·두부·애호박을 넣고 센 불, 끓으면 중불 10분.","식초 1큰술을 넣고 10분 더."],
+ kick:["2023년 3월 출시 메뉴","식초는 마지막에"]},
+{id:"curry",name:"무수분 마늘 카레",cat:"밥",time:"40분",serv:"2인분",trust:"hi",src:["kurly5"],
+ hook:"물은 카레 개는 데만. 양배추 수분으로 익힌다.",keys:["삼겹살","통마늘","양배추","카레"],
+ ing:[["재료"],["삼겹살 또는 목살","300g"],["통마늘","밥 한 공기"],["양배추","1/4통"],["고체 카레","2~3조각"],["물","100ml"],["청양고추·달걀노른자","각 1개"],["양념"],["진간장","1큰술"],["맛술","2큰술"],["소금·후추","약간"]],
+ steps:["고기를 큼직하게 썰어 소금·후추 밑간, 양배추는 잘게 썬다. 카레는 물에 개어둔다.","고기를 갈색이 나게 볶고 나온 기름에 마늘을 5분 튀기듯 볶는다.","팬 가장자리에 간장을 끓여 섞고 맛술을 넣는다.","양배추를 넣고 뚜껑 덮어 약불 20분.","갠 카레를 섞고 5분 더. 밥 위에 청양고추·노른자."],
+ kick:["바닥이 눋지 않는지 중간에 확인"]},
+{id:"fried",name:"새우 액젓 볶음밥",cat:"밥",time:"15분",serv:"2인분",trust:"mid",src:["daum1"],
+ hook:"액젓을 20~30초 볶아 향을 날리는 게 포인트.",keys:["새우","멸치액젓","달걀","밥"],
+ ing:[["재료"],["냉동 새우","10마리(8 다짐 + 2 통)"],["다진 마늘","1/2큰술"],["대파","1/2대"],["밥","2공기"],["달걀","2개"],["설탕·멸치액젓","약간"],["참기름·통깨","약간"]],
+ steps:["새우 8마리는 다지고 2마리는 통으로 둔다.","기름에 마늘·대파를 볶고 다진 새우, 통새우 순으로 볶은 뒤 통새우는 덜어둔다.","설탕과 액젓을 넣어 20~30초 볶아 비린 향을 날린다.","밥을 넣고 센 불로 볶다 한쪽에 스크램블을 만들어 섞는다.","통새우를 올리고 참기름·깨."],
+ kick:["원문에 액젓 분량 표기 없음, 1큰술부터 간 보기"]},
+{id:"myeongran",name:"명란 버터 파스타",cat:"면",time:"15분",serv:"2인분",trust:"mid",src:["daum1"],
+ hook:"불 없이 볼에서 비빈다. 킥은 마요네즈.",keys:["명란","버터","마요네즈","스파게티"],
+ ing:[["재료"],["스파게티면","2인분"],["명란젓","1개(알만)"],["버터","40g"],["마요네즈","두 바퀴"],["면수","4큰술"],["달걀노른자","1개"],["후추","약간"],["삶는 물","물 3L + 소금 1큰술"]],
+ steps:["소금물에 면을 10분 삶는다.","명란은 막을 벗겨 알만 준비한다.","볼에 잘게 썬 버터와 면을 넣고 비빈다.","명란 2큰술, 면수 4큰술을 차례로 넣어 비빈다.","마요네즈로 크리미하게 마무리하고 노른자·명란·후추를 올린다."],
+ kick:["팬 없이 볼 하나로 끝"]},
+{id:"pepper",name:"후추치즈파스타",cat:"면",time:"15분",serv:"1~2인분",trust:"mid",src:["daum1"],
+ hook:"체다치즈 슬라이스와 케첩 한 스푼으로 만드는 원팬 까초 에 페페.",keys:["체다치즈","우유","후추","스파게티"],
+ ing:[["재료"],["스파게티면","1~2인분"],["물","400ml"],["우유","100ml"],["체다치즈","3장"],["케첩","1큰술"],["다진 마늘","1큰술"],["통후추","넉넉히"],["소금","약간"],["소시지·달걀프라이","선택"]],
+ steps:["물에 소금을 넣고 끓여 면을 8분 익히며 수분을 조금 날린다.","우유를 붓고 약불로 줄인다.","치즈 3장, 케첩, 마늘을 넣고 자작해질 때까지 끓인다.","통후추를 듬뿍 갈아 넣는다."],
+ kick:["면 삶은 물을 버리지 않는 원팬 방식"]},
+{id:"tomato",name:"원 팬 토마토 버터 파스타",cat:"면",time:"20분",serv:"2인분",trust:"lo",src:["man4"],
+ hook:"홀토마토 한 캔에 면을 바로 넣어 끓인다.",keys:["홀토마토","버터","스파게티"],
+ ing:[["재료 (재현 글 기준)"],["홀토마토","1캔(400g)"],["물","500~600ml"],["스파게티면","2인분"],["버터","20g"],["간장·설탕","각 1큰술(일부 버전)"],["소금","1/2큰술"]],
+ steps:["팬에 홀토마토를 으깨 넣고 물을 붓는다.","간을 하고 끓으면 면과 버터를 넣는다.","저어가며 10분 정도, 꾸덕해질 때까지 졸인다."],
+ kick:["팬을 흔들어 전분과 버터를 유화시키기","출처마다 물 양이 다름"]},
+{id:"kkakdugi",name:"깍두기",cat:"김치",time:"2시간 + 숙성 1주",serv:"무 1개(2kg)",trust:"mid",src:["man5","man6"],
+ hook:"찹쌀풀 대신 배 음료+밀가루+굴소스로 쑨 '배풀'이 비법.",keys:["무","배 음료","굴소스","새우젓"],
+ ing:[["재료"],["무","1개(약 2kg)"],["대파","2대"],["굵은소금(절임)","2큰술"],["배풀"],["갈아만든 배 음료","1캔(238ml)"],["밀가루","3큰술"],["설탕","1큰술"],["굴소스","2큰술"],["양념"],["고춧가루","6큰술"],["새우젓","3큰술"],["새우젓 국물","1큰술"],["다진 마늘","4큰술"],["생강가루(다진 생강)","1/2큰술"]],
+ steps:["무 껍질을 벗겨 2cm로 깍둑 썰고 4L 이상 김치통에 담는다.","굵은소금을 뿌려 뚜껑 닫고 흔든 뒤 1시간~1시간 30분 절인다.","냄비에 배 음료·밀가루·설탕·굴소스를 멍울 없이 풀어 걸쭉하게 끓이고 완전히 식힌다.","절인 무는 씻지 말고 나온 물만 따라 버린다.","고춧가루를 먼저 넣고 흔들어 입힌 뒤 새우젓·국물·마늘·생강·배풀·대파를 넣어 버무린다.","상온 하루(새콤해질 때까지) → 냉장 약 1주일 숙성."],
+ kick:["풀은 반드시 식혀서. 뜨거우면 무가 무른다","굴소스 해산물 향은 끓이며 날아가고 감칠맛만 남는다","겨울 무는 크게, 여름 무는 작게 썰기","무 3kg 버전: 배 음료 340ml·밀가루 4·설탕 1.5·굴소스 3 / 고춧가루 9·새우젓 4·마늘 5"]},
+{id:"geotjeori",name:"알배추 겉절이",cat:"김치",time:"15분",serv:"2인분",trust:"mid",src:["man7"],
+ hook:"배추를 소금에 절이지 않고 씻어서 바로 무친다.",keys:["알배추","고춧가루","액젓","생강"],
+ ing:[["재료"],["알배추","300g"],["대파","약간(원본)"],["통깨","약간"],["양념"],["고춧가루","4큰술"],["진간장","3큰술"],["설탕","1큰술"],["식초","1큰술"],["까나리 액젓","1큰술"],["다진 마늘","1큰술"],["다진 생강","1/2큰술"]],
+ steps:["알배추 잎을 한 장씩 떼어 씻고 큰 잎은 자른다.","체에 밭쳐 물기를 충분히 뺀다.","양념 재료를 모두 섞는다.","세게 주무르지 말고 아래에서 위로 들어 올리듯 살살 버무린 뒤 통깨."],
+ kick:["절이지 않아 바로 먹는 생김치","주무르면 배추가 물러진다","재현 글 기준 분량"]},
+{id:"dubukimchi",name:"두부김치 (볶음김치)",cat:"김치",time:"20분",serv:"2~3인분",trust:"mid",src:["wk3"],
+ hook:"2024년 4월 '당장 레시피' 1탄. 들기름에 볶고 식초로 마무리.",keys:["김치","두부","들기름","참치액"],
+ ing:[["재료"],["부침용 두부","1모(500g)"],["굵은소금(두부 데침)","1큰술"],["배추김치","1/4포기"],["통깨","약간"],["양념"],["들기름","4큰술 + 마무리용"],["설탕","1큰술"],["진간장","1큰술"],["참치액","1큰술"],["식초","2큰술"]],
+ steps:["두부를 소금물에 넣고 끓인 뒤 약불로 속까지 데운다.","김치는 잎은 크게, 줄기는 잘게 썬다.","김치·들기름·설탕·간장·참치액을 센 불에 1~2분 볶아 수분을 날린다.","뚜껑 덮고 약불 5분.","중불로 볶으며 식초를 넣어 마무리.","두부를 썰어 담고 볶음김치, 들기름, 통깨를 올린다."],
+ kick:["식초가 신김치처럼 새콤한 맛을 더한다","두부는 굽지 않고 소금물에 데운다"]},
+{id:"musaengchae",name:"무생채",cat:"김치",time:"20분",serv:"4인분",trust:"hi",src:["kurly2"],
+ hook:"5:4:3:2:1만 외우면 끝. 비빔국수 고명으로도.",keys:["무","고춧가루","액젓","식초"],
+ ing:[["재료"],["무","1/2개"],["대파","1대"],["통깨","약간"],["양념"],["고춧가루","5큰술"],["설탕","4큰술"],["식초","3큰술"],["간장","2큰술"],["까나리 액젓","1큰술"],["천일염","1/2큰술"]],
+ steps:["무를 0.2~0.3cm로 얇게 채 썬다.","설탕과 소금으로 버무려 촉촉해질 때까지 둔다.","고춧가루로 먼저 빨갛게 물들인다.","액젓·간장(가장자리로)·식초를 넣어 무친다.","대파와 소금 한 꼬집, 통깨로 마무리."],
+ kick:["고춧가루:설탕:식초:간장:액젓 = 5:4:3:2:1","겨울 무는 껍질째"]},
+{id:"tofu",name:"두부조림",cat:"반찬·전",time:"40분",serv:"4인분",trust:"hi",src:["kurly6"],
+ hook:"대파·양파를 먼저 태우듯 굽고 굴소스로 감칠맛.",keys:["두부","굴소스","간장"],
+ ing:[["재료"],["두부","1모(300g)"],["양파","1개"],["대파","1/2대"],["홍고추","1개"],["식용유","1큰술"],["물","200ml"],["양념"],["진간장","2큰술"],["굴소스","2큰술"],["설탕","1/2큰술"],["다진 마늘","1/2큰술"],["고춧가루","2/3큰술"],["후추","약간"]],
+ steps:["두부 물기를 2분 빼고 8등분한다.","기름 없이 센 불에 대파·양파를 2분 구워 색을 낸 뒤 기름을 두른다.","설탕·마늘을 볶다 불을 끄고 간장·굴소스를 섞는다.","고춧가루를 넣어 센 불 1분.","두부와 물 200ml를 넣고 중약불 5분, 뚜껑 열고 8~10분 졸인다.","홍고추와 후추."],
+ kick:["설탕·마늘은 타기 쉬우니 불 끄고 간장 넣기"]},
+{id:"dongtae",name:"동태전",cat:"반찬·전",time:"30분",serv:"동태포 600g",trust:"mid",src:["wk2"],
+ hook:"명절 전. 소금·식초물에 5분 담가 비린내를 잡는다.",keys:["동태","달걀","부침가루"],
+ ing:[["재료"],["냉동 동태포","600g"],["부침가루","적당량"],["달걀","4개"],["소금","2꼬집"],["담금물"],["물","1L"],["굵은소금","2큰술"],["식초","1큰술"]],
+ steps:["냉장실에서 12시간 이상 해동 후 헹군다.","소금·식초물에 5분 담갔다가 물기를 꼼꼼히 닦는다.","부침가루, 소금 푼 달걀물 순으로 입힌다.","기름 넉넉히 두른 팬에 중약불로 천천히 익힌다."],
+ kick:["아래 '어남선생 전간장'과 같이"]},
+{id:"gajijeon",name:"가지전",cat:"반찬·전",time:"20분",serv:"가지 2개",trust:"mid",src:["wk2"],
+ hook:"요거트 농도 반죽을 듬뿍. 처음 2분은 뒤집지 않는다.",keys:["가지","부침가루"],
+ ing:[["재료"],["가지","2개"],["찬물","150ml"],["부침가루","7큰술"],["소금","2꼬집"],["식용유","넉넉히"]],
+ steps:["가지를 0.5cm 두께로 어슷 썬다.","찬물·부침가루·소금으로 플레인 요거트 농도 반죽을 만든다.","팬 바닥 전체에 기름을 두르고 예열한다.","반죽을 듬뿍 입혀 중불에서 앞뒤 2분씩."],
+ kick:["처음 2분은 절대 뒤집지 않기"]},
+{id:"jeonganjang",name:"어남선생 전간장",cat:"반찬·전",time:"5분",serv:"소스",trust:"mid",src:["wk2"],
+ hook:"간장 3 : 식초 1 : 설탕 1에 생강 한 꼬집.",keys:["간장","식초","생강"],
+ ing:[["재료"],["양조간장","3큰술"],["식초","1큰술"],["설탕","1큰술"],["다진 생강","1/3작은술"],["대파","약간(다짐)"],["청양고추","1/2개"]],
+ steps:["대파는 다지고 고추는 어슷 썬다.","모든 재료를 섞는다."],
+ kick:["전, 만두, 튀김에 두루"]}
+];
+
+const RATIOS=[
+ {dish:"닭볶음탕 양념",nums:[4,3,3,1],what:"고추장 : 간장 : 설탕 : 액젓",id:"dakbokkeum"},
+ {dish:"무생채 양념",nums:[5,4,3,2,1],what:"고춧가루 : 설탕 : 식초 : 간장 : 액젓",id:"musaengchae"},
+ {dish:"떡볶이 양념",nums:[4,3,2,2,2],what:"고춧가루 : 설탕 : 고추장 : 간장 : 굴소스",id:"tteok"},
+ {dish:"돼지갈비찜",nums:[5,5,5],what:"진간장 : 참치액 : 설탕",id:"galbijjim"},
+ {dish:"전간장",nums:[3,1,1],what:"간장 : 식초 : 설탕",id:"jeonganjang"}
+];
+
+const BOOK=[
+ ["평생 특식",["평생 제육볶음","긴급제육 119","만 원 닭볶음탕","만 원 갈비찜","원 팬 등갈비","꽈리멸치 치킨","냄비 바비큐","초간단 바싹 불고기","갈비치킨","어향가지","모두의 닭백숙","김치찜","버터 새우","버터 감바스","돈파육","양념 육회","만 원 찜닭","고추장 버터 등갈비","만 원 반반치킨","오징어 회무침과 천 원 깻잎전","간장게장","양념게장"]],
+ ["평생 밥",["평생 김밥","평생 김치볶음밥","달걀볶음밥","매콤 게살볶음밥","스팸 덮밥","10분 리소토","10분 달걀덮밥","어남선생 파에야","에그 전복죽","무수분 마늘 카레"]],
+ ["평생 면",["원 팬 토마토 버터 파스타","차돌볶음 파스타","스팸 케첩 파스타","명란 버터 파스타","원 팬 우유 버터 파스타","원 팬 우유 버터 봉골레","원 팬 카르보나라","보일링 크랩 골뱅이 소면","참간초면","원 팬 삼겹 잡채","분식집 라볶이","어묵국수","설마고추장비빔면"]],
+ ["평생 국·탕·찌개",["초간단 홍합탕","한우양지미역국","어남선생 감자탕 완결판","평생 김치찌개","평생 된장찌개","스팸 순두부찌개","고추장찌개","로제 부대찌개","녹두삼계탕","러브 황태해장국","평생 육개장"]],
+ ["평생 간식",["즉석 떡볶이","평생 떡볶이","짜장 떡볶이","궁중 떡볶이","휴게소 버터감자","크레이지 고구마","달걀 샌드위치","콘치즈","꿀새우피자 한 판","굴전 한 판","떡꼬치","크림치즈 연어 샌드위치","원조 길거리 토스트","치즈 퐁뒤","허니마요 떡볶이","만두피 추로스","프렌치 토스트","사치빵","감자 수프","호감 수프","당근 수프","새우 타파스"]]
+];
+const BOOKLINK={"평생 제육볶음":"jeyuk","만 원 닭볶음탕":"dakbokkeum","만 원 갈비찜":"galbijjim","초간단 바싹 불고기":"bassak","어향가지":"eohyang","무수분 마늘 카레":"curry","원 팬 토마토 버터 파스타":"tomato","명란 버터 파스타":"myeongran","평생 김치찌개":"kimchi","고추장찌개":"gochujang","평생 떡볶이":"tteok"};
+
+// chef 필드가 없는 레시피는 류수영 레시피
+R.forEach(r=>{r.chef=r.chef||"류수영"});
+const CHEFS=[...new Set(R.map(r=>r.chef))];
+let chef="전체";
+const CATS=["전체","고기·특식","밥","면","국·찌개","김치","반찬·전","분식·간식"];
+const TRUST={hi:"플랫폼 정리",mid:"기사·블로그",lo:"분량 제각각"};
+let cat="전체";
+try{const c=localStorage.getItem("ryu-cat"); if(CATS.includes(c)) cat=c;}catch(e){}
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bookCount=BOOK.reduce((a,p)=>a+p[1].length,0);
+$("#stats").innerHTML=`<span>상세 레시피 <b>${R.length}</b>개</span><span>셰프 <b>${CHEFS.length}</b>명</span><span>분류 <b>${CATS.length-1}</b>개</span><span>책 목차 메뉴 <b>${bookCount}</b>개</span>`;
+$("#chefSel").innerHTML=["전체",...CHEFS].map(c=>`<option value="${esc(c)}">${c==="전체"?"모든 셰프":esc(c)}</option>`).join("");
+$("#chefSel").addEventListener("change",e=>{chef=e.target.value; render();});
+
+$("#ratios").innerHTML=RATIOS.map(r=>{
+  const sum=r.nums.reduce((a,b)=>a+b,0);
+  const who=(R.find(x=>x.id===r.id)||{}).chef||"";
+  return `<div class="ratio"><div class="dish">${esc(r.dish)} · ${esc(who)}</div><div class="nums">${r.nums.join(" : ")}</div>
+  <div class="bar" aria-hidden="true">${r.nums.map(n=>`<i style="flex:${n/sum}"></i>`).join("")}</div>
+  <div class="what">${esc(r.what)}</div></div>`}).join("");
+
+function renderChips(){
+  $("#chips").innerHTML=CATS.map(c=>{
+    const n=c==="전체"?R.length:R.filter(r=>r.cat===c).length;
+    return `<button class="chip" aria-pressed="${c===cat}" data-c="${c}">${c}<span class="n">${n}</span></button>`}).join("");
+}
+function matches(r,q){
+  if(!q) return true;
+  const hay=[r.name,r.chef,r.hook,r.cat,...r.keys,...r.ing.map(i=>i[0])].join(" ").toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every(t=>hay.includes(t));
+}
+function render(){
+  const q=$("#q").value.trim();
+  const list=R.filter(r=>(cat==="전체"||r.cat===cat)&&(chef==="전체"||r.chef===chef)&&matches(r,q));
+  $("#resultLine").textContent=`${list.length}개 레시피${q?` · "${q}" 검색`:""}${cat!=="전체"?` · ${cat}`:""}`;
+  $("#grid").innerHTML=list.length?list.map(r=>`
+    <button class="card" data-id="${r.id}">
+      <div class="top"><span class="cat">${r.cat} · ${esc(r.chef)}</span><span class="trust ${r.trust}">${TRUST[r.trust]}</span></div>
+      <h3>${esc(r.name)}</h3>
+      <p class="hook">${esc(r.hook)}</p>
+      <div class="meta"><span>${esc(r.time)}</span><span>${esc(r.serv)}</span></div>
+      <div class="keys">${r.keys.map(k=>`<span>${esc(k)}</span>`).join("")}</div>
+    </button>`).join(""):`<div class="empty">맞는 레시피가 없습니다. 다른 재료 이름으로 검색해 보세요.</div>`;
+}
+function open(id){
+  const r=R.find(x=>x.id===id); if(!r) return;
+  $("#panel").innerHTML=`
+    <button class="close" id="closeBtn">닫기 ✕</button>
+    <div><div class="top" style="display:flex;gap:10px;font-size:12px"><span class="cat">${r.cat} · ${esc(r.chef)}</span><span class="trust ${r.trust}">${TRUST[r.trust]}</span></div>
+    <h2 id="p-title">${esc(r.name)}</h2><p class="hook" style="margin:6px 0 0;color:var(--muted)">${esc(r.hook)}</p></div>
+    <div class="meta"><span>${esc(r.time)}</span><span>${esc(r.serv)}</span></div>
+    <div><h4>재료</h4><ul class="ing">${r.ing.map(i=>i.length===1?`<li class="grp">${esc(i[0])}</li>`:`<li><span>${esc(i[0])}</span><span class="amt">${esc(i[1])}</span></li>`).join("")}</ul></div>
+    <div><h4>만드는 순서</h4><ol class="steps">${r.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>
+    <div class="kick"><b>어남선생 킥</b><ul>${r.kick.map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div>
+    <div class="note">출처: ${r.src.map(k=>`<a href="${S[k][1]}" target="_blank" rel="noopener">${esc(S[k][0])}</a>`).join(" · ")}</div>`;
+  $("#overlay").hidden=false; document.body.style.overflow="hidden"; $("#closeBtn").focus();
+}
+function close(){ $("#overlay").hidden=true; document.body.style.overflow=""; }
+
+$("#parts").innerHTML=BOOK.map(([p,items])=>`<div class="part"><h3>${p}<span>${items.length}</span></h3><ul>${
+  items.map(n=>BOOKLINK[n]?`<li><button data-id="${BOOKLINK[n]}">${esc(n)}</button></li>`:`<li>${esc(n)}</li>`).join("")}</ul></div>`).join("");
+$("#srcs").innerHTML=Object.values(S).map(([t,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("");
+
+document.addEventListener("click",e=>{
+  const chip=e.target.closest(".chip");
+  if(chip){cat=chip.dataset.c; try{localStorage.setItem("ryu-cat",cat)}catch(_){}; renderChips(); render(); return;}
+  const t=e.target.closest("[data-id]"); if(t){open(t.dataset.id); return;}
+  if(e.target.id==="overlay"||e.target.id==="closeBtn") close();
+});
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!$("#overlay").hidden) close(); });
+$("#q").addEventListener("input",render);
+renderChips(); render();
+</script>
+</html>
