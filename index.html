@@ -591,7 +591,8 @@ function openR(id,src){
   $("#scrim").animate([{opacity:0},{opacity:1}],{duration:450,easing:EASE.fadeIn});
   panel.animate([{transform:"translateX(32px)",opacity:0},{transform:"none",opacity:1}],{duration:600,easing:EASE.open});
   reveal(panel).forEach((el,i)=>el.animate([{transform:"translateY(24px)",opacity:0,filter:"blur(8px)"},{transform:"none",opacity:1,filter:"blur(0)"}],{duration:900,easing:EASE.open,delay:250+i*50,fill:"backwards"}));
-  if(!srcPh||!cover) return;
+  const seen=r=>r&&r.width>0&&r.bottom>0&&r.top<innerHeight;
+  if(!srcPh||!cover||!seen(from)) return;
   busy=true; cover.style.visibility="hidden"; srcPh.style.visibility="hidden";
   fly(from,{top:to.top,left:to.left,width:to.width,height:to.height,radius:"0px"},srcPh,950,EASE.open)
     .then(c=>{cover.style.visibility=""; c.remove(); busy=false;});
@@ -605,7 +606,7 @@ function closeR(){
   reveal(panel).forEach((el,i)=>el.animate([{transform:"none",opacity:1,filter:"blur(0)"},{transform:"translateY(14px)",opacity:0,filter:"blur(6px)"}],{duration:350,easing:EASE.recede,delay:i*30,fill:"forwards"}));
   $("#scrim").animate([{opacity:1},{opacity:0}],{duration:550,easing:EASE.fadeOut,delay:250,fill:"forwards"});
   const target=srcPh?.getBoundingClientRect();
-  const onScreen=target&&target.bottom>0&&target.top<innerHeight&&target.width>0;
+  const onScreen=target&&target.width>0&&target.bottom>0&&target.top<innerHeight;
   if(!cover||!onScreen){
     panel.animate([{transform:"none",opacity:1},{transform:"translateX(32px)",opacity:0}],{duration:450,easing:EASE.fadeOut,fill:"forwards"}).finished.then(done);
     return;
