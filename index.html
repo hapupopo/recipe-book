@@ -241,7 +241,7 @@ footer a{color:var(--muted)}
 
 <footer><div class="wrap">
   <p>분량은 방송·책 원본과 다를 수 있습니다. 레시피마다 출처 신뢰도를 표시했습니다: <span class="trust hi">플랫폼 정리</span> 레시피 플랫폼에 분량까지 정리됨, <span class="trust mid">기사·블로그</span> 기사나 블로그 재현, <span class="trust lo">분량 제각각</span> 출처마다 분량이 다름.</p>
-  <p>사진은 Unsplash와 Wikimedia Commons의 자유 이용 사진입니다. 요리 예시라 레시피 완성본과 다를 수 있습니다. 2026년 11월부터 수집.</p>
+  <p>사진은 Unsplash와 Wikimedia Commons의 자유 이용 사진이고, 맞는 사진이 없는 12개는 레시피 내용을 바탕으로 AI로 만든 이미지입니다. 모두 요리 예시라 완성본과 다를 수 있습니다. 2026년 11월부터 수집.</p>
   <details><summary>레시피 출처 보기</summary><ul id="srcs"></ul></details>
   <details><summary>사진 저작자 보기</summary><ul id="credits"></ul></details>
 </div></footer>
@@ -446,40 +446,41 @@ const RATIOS=[
 R.forEach(r=>{r.chef=r.chef||"류수영"});
 const CHEFS=[...new Set(R.map(r=>r.chef))];
 let chef="전체";
-// 사진: Unsplash는 ["u:사진ID", 페이지 ID, 작가, 라이선스], Commons는 [파일명, 해시 경로, 저작자, 라이선스, 썸네일 여부]
+// 사진: AI 생성은 ["a:파일 경로", "", 도구, 표기], Unsplash는 ["u:사진ID", 페이지 ID, 작가, 라이선스], Commons는 [파일명, 해시 경로, 저작자, 라이선스, 썸네일 여부]
 const IMG={
   dubukimchi:["Korean_cuisine-Dubu_kimchi-01.jpg","f/fc","benghan","CC BY-SA 2.0",1],
   kkakdugi:["Kkakdugi,_radish_kimchi,_by_comicpie_in_Toronto.jpg","0/01","comicpie","CC BY 2.0",1],
   chonggak:["Korean_cuisine-Chonggak_kimchi-01.jpg","8/87","Richy!","CC BY-SA 2.0",1],
   dongchimi:["KOCIS_Dongchimi_(4814810848).jpg","5/51","Korea.net / KOCIS","CC BY-SA 2.0",1],
   dongchimi2:["Korean-Dongchimi-01.jpg","5/53","karendotcom127","CC BY 2.0",1],
-  jeyuk:["u:1652615389989-fa324011f9c1","DJ7f-U14XpM","set.sj","Unsplash License",1],
-  dakbokkeum:["u:1631292784640-2b24be784d5d","Xnb826JWdDI","Sushmita Chatterjee","Unsplash License",1],
-  galbijjim:["u:1683225757624-86943fb48966","UH_5DgM-JbU","Dynamic Wang","Unsplash License",1],
-  bassak:["u:1677029969065-c9f4003a9ad5","hWxFxd-VySY","Subagus Indra","Unsplash License",1],
-  bulgogi:["u:1718777791262-c66d11baaa3b","UUkXJIXgy4","Maria Klichik","Unsplash License",1],
   eohyang:["u:1574653853037-350acd8b0bc9","tDSPGQcmsLE","CHUTTERSNAP","Unsplash License",1],
-  ojing:["u:1741243413751-e76e69f58d80","K_jtqdOnkbw","Khanh Nguyen","Unsplash License",1],
   tteok:["u:1635363638580-c2809d049eee","w_2vlvTgk7E","Marcin Skalij","Unsplash License",1],
   toast:["u:1584776296944-ab6fb57b0bdd","5C2JmojQ6hQ","Yukiko Kanada","Unsplash License",1],
-  kimchi:["u:1777113310299-c3e41dec4e0f","_dE1Z3gS0P0","note thanun","Unsplash License",1],
   gochujang:["u:1760228865341-675704c22a5b","1_SenAyTAXg","rawkkim","Unsplash License",1],
   curry:["u:1705313381636-672463bfa6fa","bw8161Dx48k","Markus Winkler","Unsplash License",1],
   fried:["u:1630914441934-a29bf360934c","2_VyVeMGD04","Amanda Lim","Unsplash License",1],
-  myeongran:["u:1764586119076-61711e8ed25a","8sdRfiPf4Qo","Chris Weiher","Unsplash License",1],
   pepper:["u:1693342754896-0520a7f2bc59","oW5eupy_Yhg","Rosa Rafael","Unsplash License",1],
   tomato:["u:1598866594230-a7c12756260f","qits91IZv1o","Danijela Prijovic","Unsplash License",1],
   kimjang:["u:1583224964978-2257b960c3d3","M_mDgb8guhA","Portuguese Gravity","Unsplash License",1],
   geotjeori:["u:1706468238786-63e6a4c814eb","RNMS4Ggtdic","Jason Leung","Unsplash License",1],
   tofu:["u:1762305194201-077e7e23ccf2","N0lnO0gZlW8","Lee Milo","Unsplash License",1],
-  dongtae:["u:1616627077891-a4780e730b7e","LGuTOZCfygY","Crystal Jo","Unsplash License",1],
   jeonganjang:["u:1724705341602-92b4be2626f4","517xvbBzNi4","heino eisner","Unsplash License",1],
-  musaengchae:["u:1757596057470-19d36962705d","PUem1HziEqY","Vikas Kumar","Unsplash License",1],
-  musaengchae2:["u:1564834724105-918b73d1b9e0","H6iSwrAOMG0","Ryan Kwok","Unsplash License",1]
+  jeyuk:["a:img/jeyuk.jpg","","Canva AI","AI 생성 이미지"],
+  dakbokkeum:["a:img/dakbokkeum.jpg","","Canva AI","AI 생성 이미지"],
+  galbijjim:["a:img/galbijjim.jpg","","Canva AI","AI 생성 이미지"],
+  bassak:["a:img/bassak.jpg","","Canva AI","AI 생성 이미지"],
+  bulgogi:["a:img/bulgogi.jpg","","Canva AI","AI 생성 이미지"],
+  ojing:["a:img/ojing.jpg","","Canva AI","AI 생성 이미지"],
+  kimchi:["a:img/kimchi.jpg","","Canva AI","AI 생성 이미지"],
+  myeongran:["a:img/myeongran.jpg","","Canva AI","AI 생성 이미지"],
+  dongtae:["a:img/dongtae.jpg","","Canva AI","AI 생성 이미지"],
+  musaengchae:["a:img/musaengchae.jpg","","Canva AI","AI 생성 이미지"],
+  musaengchae2:["a:img/musaengchae2.jpg","","Canva AI","AI 생성 이미지"],
+  gajijeon:["a:img/gajijeon.jpg","","Canva AI","AI 생성 이미지"]
 };
-const imgURL=k=>{const m=IMG[k]; if(!m) return ""; if(m[0].startsWith("u:")) return `https://images.unsplash.com/photo-${m[0].slice(2)}?w=900&h=1125&fit=crop&q=80&auto=format`; const f=encodeURIComponent(m[0]);
+const imgURL=k=>{const m=IMG[k]; if(!m) return ""; if(m[0].startsWith("a:")) return m[0].slice(2); if(m[0].startsWith("u:")) return `https://images.unsplash.com/photo-${m[0].slice(2)}?w=900&h=1125&fit=crop&q=80&auto=format`; const f=encodeURIComponent(m[0]);
   return m[4]?`https://upload.wikimedia.org/wikipedia/commons/thumb/${m[1]}/${f}/960px-${f}`:`https://upload.wikimedia.org/wikipedia/commons/${m[1]}/${f}`;};
-const filePage=k=>IMG[k][0].startsWith("u:")?`https://unsplash.com/photos/${IMG[k][1]}`:`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(IMG[k][0])}`;
+const filePage=k=>IMG[k][0].startsWith("a:")?"":IMG[k][0].startsWith("u:")?`https://unsplash.com/photos/${IMG[k][1]}`:`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(IMG[k][0])}`;
 
 const CATS=["전체","고기·특식","밥","면","국·찌개","김치","반찬·전","분식·간식"];
 const TRUST={hi:"플랫폼 정리",mid:"기사·블로그",lo:"분량 제각각"};
@@ -566,7 +567,7 @@ const reveal=root=>[...root.querySelectorAll(".credit,.inner>*")];
 function openR(id,src){
   const r=byId(id); if(!r||busy) return;
   lastFocus=document.activeElement;
-  const credit=IMG[r.id]?`<div class="credit">사진: <a href="${filePage(r.id)}" target="_blank" rel="noopener">${esc(IMG[r.id][2])}</a>, ${IMG[r.id][3]}. 요리 예시 사진입니다.</div>`:"";
+  const credit=!IMG[r.id]?"":IMG[r.id][0].startsWith("a:")?`<div class="credit">레시피 내용을 바탕으로 AI로 만든 예시 이미지입니다.</div>`:`<div class="credit">사진: <a href="${filePage(r.id)}" target="_blank" rel="noopener">${esc(IMG[r.id][2])}</a>, ${IMG[r.id][3]}. 요리 예시 사진입니다.</div>`;
   $("#panel").getAnimations().forEach(a=>a.cancel()); $("#scrim").getAnimations().forEach(a=>a.cancel());
   $("#panel").innerHTML=`
     <div style="position:relative"><button class="close" id="closeBtn">닫기</button>${photo(r.id,r.name,"cover")}</div>${credit}
@@ -619,7 +620,7 @@ function closeR(){
 }
 
 $("#srcs").innerHTML=Object.values(S).map(([t,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("");
-$("#credits").innerHTML=Object.keys(IMG).map(k=>`<li><a href="${filePage(k)}" target="_blank" rel="noopener">${esc((R.find(r=>r.id===k)||{}).name||k)}</a>, ${esc(IMG[k][2])}, ${IMG[k][3]}</li>`).join("");
+$("#credits").innerHTML=Object.keys(IMG).map(k=>IMG[k][0].startsWith("a:")?`<li>${esc((R.find(r=>r.id===k)||{}).name||k)}, Canva AI로 생성</li>`:`<li><a href="${filePage(k)}" target="_blank" rel="noopener">${esc((R.find(r=>r.id===k)||{}).name||k)}</a>, ${esc(IMG[k][2])}, ${IMG[k][3]}</li>`).join("");
 
 const toList=()=>{ if(window.scrollY>$("#recipes").offsetTop) $("#recipes").scrollIntoView({behavior:"smooth"}); };
 document.addEventListener("click",e=>{
