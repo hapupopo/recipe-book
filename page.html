@@ -22,6 +22,7 @@
   --chili:#EE7A62; --chili-soft:#3A2420; --napa:#262E1C; --napa-ink:#D3E0A6; --oil:#E2AE52; color-scheme:dark}
 
 *{box-sizing:border-box}
+html{scrollbar-gutter:stable}
 body{background:var(--rice);color:var(--laver);font-family:var(--f-body);font-size:15px;line-height:1.65;margin:0;font-variant-numeric:tabular-nums}
 .wrap{max-width:1200px;margin:0 auto;padding-left:var(--gut-l);padding-right:var(--gut-r)}
 h1,h2,h3,h4{margin:0;text-wrap:balance}
@@ -134,10 +135,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (max-width:720px){.ratio{grid-template-columns:minmax(0,1fr)}.ratio .nums{white-space:normal}}
 
 /* 상세 패널 */
-.overlay{position:fixed;inset:0;background:rgba(15,20,17,.5);z-index:50;display:flex;justify-content:flex-end}
+.overlay{position:fixed;inset:0;z-index:50;display:flex;justify-content:flex-end}
+.scrim{position:absolute;inset:0;background:rgba(15,20,17,.5)}
 .overlay[hidden]{display:none}
-.panel{background:var(--paper);width:min(640px,100%);height:100%;overflow-y:auto;overscroll-behavior:contain;animation:slide .28s cubic-bezier(.2,.7,.2,1)}
-@keyframes slide{from{transform:translateX(32px);opacity:0}}
+.panel{position:relative;background:var(--paper);width:min(640px,100%);height:100%;overflow-y:auto;overscroll-behavior:contain}
+/* 카드 사진이 상세 화면 표지로 커지는 동안 쓰는 복제본 */
+.fly{position:fixed;z-index:60;margin:0;pointer-events:none}
 .panel .cover{aspect-ratio:16/10;border-radius:0}
 .close{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:2;border:0;background:var(--paper);border-radius:6px;padding:7px 12px;font-size:14px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.18)}
 .credit{font-size:12px;color:var(--muted);padding:8px 28px 0}
@@ -185,7 +188,7 @@ footer a{color:var(--muted)}
   .inner{padding:20px 20px 40px}
   .credit{padding-inline:20px}
 }
-@media (prefers-reduced-motion:reduce){.panel{animation:none}}
+
 </style>
 
 <header class="top"><div class="wrap">
@@ -238,6 +241,7 @@ footer a{color:var(--muted)}
 </div></footer>
 
 <div class="overlay" id="overlay" hidden>
+  <div class="scrim" id="scrim"></div>
   <div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="p-title"></div>
 </div>
 
@@ -540,11 +544,24 @@ function render(){
 }
 function reset(){ $("#q").value=""; cat="전체"; chef="전체"; $("#chefSel").value="전체"; try{localStorage.setItem("ryu-cat",cat)}catch(_){}; renderTabs(); render(); }
 
-let lastFocus=null;
-function openR(id){
-  const r=byId(id); if(!r) return;
+// 카드 → 상세 전환: 카드 사진을 복제해 상세 표지 자리로 키우고(FLIP), 닫을 때 되돌린다.
+const EASE={open:"cubic-bezier(.23,1,.32,1)",close:"cubic-bezier(.76,0,.24,1)",fadeIn:"cubic-bezier(.33,1,.68,1)",fadeOut:"cubic-bezier(.32,0,.67,0)",recede:"cubic-bezier(.5,0,.75,0)"};
+const calm=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+let lastFocus=null, srcPh=null, busy=false;
+function fly(from,to,fromEl,dur,ease,delay=0){
+  const c=fromEl.cloneNode(true); c.classList.add("fly"); c.style.visibility="visible";
+  const box=r=>({top:r.top+"px",left:r.left+"px",width:r.width+"px",height:r.height+"px"});
+  Object.assign(c.style,box(from)); document.body.appendChild(c);
+  const rad=[getComputedStyle(fromEl).borderRadius,to.radius];
+  const a=c.animate([{...box(from),borderRadius:rad[0]},{...box(to),borderRadius:rad[1]}],{duration:dur,easing:ease,delay,fill:"forwards"});
+  return a.finished.then(()=>c);
+}
+const reveal=root=>[...root.querySelectorAll(".credit,.inner>*")];
+function openR(id,src){
+  const r=byId(id); if(!r||busy) return;
   lastFocus=document.activeElement;
   const credit=IMG[r.id]?`<div class="credit">사진: <a href="${filePage(r.id)}" target="_blank" rel="noopener">${esc(IMG[r.id][2])}</a>, ${IMG[r.id][3]}. 요리 예시 사진입니다.</div>`:"";
+  $("#panel").getAnimations().forEach(a=>a.cancel()); $("#scrim").getAnimations().forEach(a=>a.cancel());
   $("#panel").innerHTML=`
     <div style="position:relative"><button class="close" id="closeBtn">닫기</button>${photo(r.id,r.name,"cover")}</div>${credit}
     <div class="inner">
@@ -559,9 +576,40 @@ function openR(id){
       <div class="kick"><h4>실패하지 않는 요령</h4><ul>${r.kick.map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div>
       <div class="note">레시피 출처: ${r.src.map(k=>`<a href="${S[k][1]}" target="_blank" rel="noopener">${esc(S[k][0])}</a>`).join(", ")}</div>
     </div>`;
-  $("#overlay").hidden=false; $("#panel").scrollTop=0; document.body.style.overflow="hidden"; $("#closeBtn").focus();
+  $("#overlay").hidden=false; $("#panel").scrollTop=0; document.body.style.overflow="hidden"; $("#closeBtn").focus({preventScroll:true});
+  srcPh=src?.querySelector(".ph")||null;
+  if(calm()) return;
+  const panel=$("#panel"), cover=panel.querySelector(".cover");
+  // 패널이 움직이기 전에 도착 위치를 잰다
+  const from=srcPh?.getBoundingClientRect(), to=cover?.getBoundingClientRect();
+  $("#scrim").animate([{opacity:0},{opacity:1}],{duration:450,easing:EASE.fadeIn});
+  panel.animate([{transform:"translateX(32px)",opacity:0},{transform:"none",opacity:1}],{duration:600,easing:EASE.open});
+  reveal(panel).forEach((el,i)=>el.animate([{transform:"translateY(24px)",opacity:0,filter:"blur(8px)"},{transform:"none",opacity:1,filter:"blur(0)"}],{duration:900,easing:EASE.open,delay:250+i*50,fill:"backwards"}));
+  if(!srcPh||!cover) return;
+  busy=true; cover.style.visibility="hidden"; srcPh.style.visibility="hidden";
+  fly(from,{top:to.top,left:to.left,width:to.width,height:to.height,radius:"0px"},srcPh,950,EASE.open)
+    .then(c=>{cover.style.visibility=""; c.remove(); busy=false;});
 }
-function closeR(){ $("#overlay").hidden=true; document.body.style.overflow=""; if(lastFocus) lastFocus.focus(); }
+function closeR(){
+  if(busy||$("#overlay").hidden) return;
+  const done=()=>{ $("#overlay").hidden=true; document.body.style.overflow=""; if(srcPh) srcPh.style.visibility=""; srcPh=null; busy=false; if(lastFocus) lastFocus.focus({preventScroll:true}); };
+  if(calm()) return done();
+  busy=true;
+  const panel=$("#panel"), cover=panel.querySelector(".cover");
+  reveal(panel).forEach((el,i)=>el.animate([{transform:"none",opacity:1,filter:"blur(0)"},{transform:"translateY(14px)",opacity:0,filter:"blur(6px)"}],{duration:350,easing:EASE.recede,delay:i*30,fill:"forwards"}));
+  $("#scrim").animate([{opacity:1},{opacity:0}],{duration:550,easing:EASE.fadeOut,delay:250,fill:"forwards"});
+  const target=srcPh?.getBoundingClientRect();
+  const onScreen=target&&target.bottom>0&&target.top<innerHeight&&target.width>0;
+  if(!cover||!onScreen){
+    panel.animate([{transform:"none",opacity:1},{transform:"translateX(32px)",opacity:0}],{duration:450,easing:EASE.fadeOut,fill:"forwards"}).finished.then(done);
+    return;
+  }
+  const from=cover.getBoundingClientRect();
+  cover.style.visibility="hidden";
+  panel.animate([{opacity:1},{opacity:0}],{duration:450,easing:EASE.fadeOut,delay:100,fill:"forwards"});
+  fly(from,{top:target.top,left:target.left,width:target.width,height:target.height,radius:getComputedStyle(srcPh).borderRadius},cover,850,EASE.close,50)
+    .then(c=>{done(); requestAnimationFrame(()=>c.remove());});
+}
 
 $("#srcs").innerHTML=Object.values(S).map(([t,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("");
 $("#credits").innerHTML=Object.keys(IMG).map(k=>`<li><a href="${filePage(k)}" target="_blank" rel="noopener">${esc((R.find(r=>r.id===k)||{}).name||k)}</a>, ${esc(IMG[k][2])}, ${IMG[k][3]}</li>`).join("");
@@ -573,8 +621,8 @@ document.addEventListener("click",e=>{
   const pick=e.target.closest("[data-pick]");
   if(pick){$("#q").value=$("#q").value.trim()===pick.dataset.pick?"":pick.dataset.pick; render(); $("#recipes").scrollIntoView({behavior:"smooth"}); return;}
   if(e.target.closest("[data-reset]")){reset(); return;}
-  if(e.target.id==="closeBtn"||e.target.id==="overlay"){closeR(); return;}
-  const t=e.target.closest("[data-id]"); if(t) openR(t.dataset.id);
+  if(e.target.id==="closeBtn"||e.target.id==="scrim"){closeR(); return;}
+  const t=e.target.closest("[data-id]"); if(t) openR(t.dataset.id,t);
 });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!$("#overlay").hidden) closeR(); });
 $("#q").addEventListener("input",render);
